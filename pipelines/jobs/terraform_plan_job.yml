@@ -18,7 +18,7 @@ jobs:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
           tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
           tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
-          tfstateContainer: ${{ variables.tfstateStorageContainerName}}
+          tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
           tfstateLocation: ${{ variables.tfstateLocation}}
       # fetch credentials from Az CLI into environment vars          
       - template: ../tasks/terraform_creds_task.yml
@@ -29,4 +29,4 @@ jobs:
         parameters:
           tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
           tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
-          tfstateContainer: ${{ variables.tfstateStorageContainerName}}
+          tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
