@@ -1,12 +1,4 @@
 parameters:
-  - name: azureSubscriptionName
-    type: string
-  - name: resourceGroupName
-    type: string
-  - name: storageAccountName
-    type: string
-  - name: tfstateContainer
-    type: string
 
 steps:
   # Set AzureRM credentials to environment variables using Terraform's convention.
