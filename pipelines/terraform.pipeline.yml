@@ -4,12 +4,6 @@ trigger:
 pool:
   vmImage: "ubuntu-latest"
 
-# resources:
-#   repositories:
-#   - repository: YAMLTemplates
-#     type: git
-#     name: Examples/YAMLTemplates
-
 stages:
   - template: terraform.template.yml
     parameters:
