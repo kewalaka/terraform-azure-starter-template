@@ -11,20 +11,18 @@ parameters:
     type: string
 
 steps:
-  - task: AzureCLI@2
+  - task: AzurePowerShell@5
     displayName: Check for TF Azure backend
     inputs:
       azureSubscription: ${{ parameters.azureSubscriptionName }}
-      scriptType: "pscore"
-      scriptLocation: "inlineScript"
-      arguments: "${{ parameters.resourceGroupName }} ${{ parameters.storageAccountName }} ${{ parameters.tfstateContainer }} ${{ parameters.location }}"
+      scriptType: "inlineScript"
+      azurePowerShellVersion: latestVersion
+      pwsh: true      
       inlineScript: |
-        $resource_group_name = $1
-        $storage_account_name = $2
-        $container_name = $3
-        $location = $4
-
-        Import-Module Az
+        $resource_group_name = ${{ parameters.resourceGroupName }}
+        $storage_account_name = ${{ parameters.storageAccountName }}
+        $container_name = ${{ parameters.tfstateContainer }}
+        $location = ${{ parameters.location }}
 
         # create resource group
         try {
