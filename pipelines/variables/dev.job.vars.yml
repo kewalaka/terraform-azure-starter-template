@@ -1,5 +1,5 @@
 variables:
   AzureRMServiceConnection: "AzureRM"
-  tfstateResourceGroupName: "rg-terraform-playgound"
+  tfstateResourceGroupName: "rg-terraform-playground"
   tfstateStorageAccountName: "sttfstuff023"
   tfstateStorageContainerName: "terraform"
