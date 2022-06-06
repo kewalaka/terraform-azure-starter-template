@@ -11,13 +11,14 @@ jobs:
       - template: ../variables/${{ parameters.environmentName }}.job.vars.yml
     steps:
       - template: ../tasks/terraform_fmt_task.yml
-      - template: ../tasks/terraform_create_azurebackend_task.yml
+      - template: ../tasks/terraform_create_azurebackend_task.yml      
         parameters:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
           resourceGroupName: ${{ variables.tfstateResourceGroupName}}
           storageAccountName: ${{ variables.tfstateStorageAccountName}}
           tfstateContainer: ${{ variables.tfstateStorageContainerName}}
           location: ${{ variables.location}}
+      - template: ../tasks/terraform_creds_task.yml
       - template: ../tasks/terraform_init_azurebackend_task.yml
         parameters:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
