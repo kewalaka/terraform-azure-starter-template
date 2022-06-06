@@ -1,3 +1,7 @@
+parameters:
+  - name: azureSubscriptionName
+    type: string
+
 steps:
   # Set AzureRM credentials to environment variables using Terraform's convention.
   # https://www.terraform.io/language/settings/backends/azurerm
