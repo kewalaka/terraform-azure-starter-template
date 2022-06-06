@@ -1,7 +1,3 @@
-parameters:
-  - name: azureSubscriptionName
-    type: string
-
 steps:
   - bash: terraform fmt -check -recursive
     displayName: Terraform Format Check
