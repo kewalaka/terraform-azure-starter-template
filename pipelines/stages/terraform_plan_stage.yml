@@ -8,8 +8,9 @@ stages:
   - stage: "${{ parameters.serviceName }}_plan"
     jobs:
       - ${{ each environmentObject in parameters.environmentObjects }}:
-          - template: ../jobs/terraform_plan_job.yml
-            parameters:
-              environmentName: ${{ environmentObject.environmentName }}
-              serviceName: ${{ parameters.serviceName }}
-              locationCode: ${{ environmentObject.locationCode }}
+          - ${{ each locationCode in environmentObject.locationCode }}:
+              - template: ../jobs/terraform_plan_job.yml
+                parameters:
+                  environmentName: ${{ environmentObject.environmentName }}
+                  serviceName: ${{ parameters.serviceName }}
+                  locationCode: ${{ locationCode }}
