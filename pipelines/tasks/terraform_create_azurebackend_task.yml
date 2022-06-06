@@ -1,0 +1,60 @@
+parameters:
+  - name: azureSubscriptionName
+    type: string
+  - name: resourceGroupName
+    type: string
+  - name: storageAccountName
+    type: string
+  - name: tfstateContainer
+    type: string
+  - name: location
+    type: string
+
+steps:
+  - task: AzureCLI@2
+    displayName: Azure CLI
+    inputs:
+      azureSubscription: ${{ parameters.azureSubscriptionName }}
+      scriptType: "pscore"
+      scriptLocation: "inlineScript"
+      arguments: "${{ parameters.resourceGroupName }} ${{ parameters.storageAccountName }} ${{ parameters.tfstateContainer }} ${{ parameters.location }}"
+      inlineScript: |
+        $resouce_group_name = $1
+        $storage_account_name = $2
+        $container_name = $3
+        $location = $4
+
+        # create resource group
+        try {
+            $rg = (Get-AzResourceGroup -Name $resource_group_name).resourceid
+        }
+        catch {}
+        if ($null -eq $rg) {
+            Write-Host "Creating resource group: $resource_group_name in location $location"
+            New-AzResourceGroup -Name $resource_group_name -location $location
+        }
+        else {
+            Write-Host "Using existing resource group: $resource_group_name"
+        }
+        # Create storage account
+        try {
+            $sa = Get-AzStorageAccount -resourcegroup $resource_group_name -name $storage_account_name
+        }
+        catch {}
+        if ($null -eq $sa) {
+            Write-Host "Creating storage account: $storage_account_name"
+            $sa = New-AzStorageAccount -ResourceGroupName $resource_group_name -Name $storage_account_name  -Location $location -SkuName Standard_LRS -Kind BlobStorage -AccessTier Hot
+        }
+        else {
+            Write-Host "Using existing storage account: $storage_account_name"
+        }        
+        $account_key = (Get-AzStorageAccountKey -ResourceGroupName $resource_group_name -Name $sa.StorageAccountName)[0].Value
+        $sac = New-AzStorageContext -StorageAccountName $sa.StorageAccountName -StorageAccountKey $account_key
+        # create container
+        if ($null -eq (Get-AzstorageContainer -context $sac | Where-Object Name -eq $container_name)) {
+            Write-Host "Creating storage container: $container_name"
+            New-AzStorageContainer -name $container_name -Context $sac
+        }
+        else {
+            Write-Host "Using existing storage container: $container_name"
+        }

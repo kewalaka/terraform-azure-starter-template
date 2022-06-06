@@ -1,0 +1,13 @@
+parameters:
+  - name: azureSubscriptionName
+    type: string
+
+steps:
+  - task: AzureCLI@2
+    displayName: Terraform Format Check
+    inputs:
+      azureSubscription: ${{ parameters.azureSubscriptionName }}
+      scriptType: "pscore"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        terraform fmt -check -recursive

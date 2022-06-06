@@ -1,0 +1,28 @@
+parameters:
+  - name: environmentObjects
+    type: object
+    default:
+      - environmentName: "dev"
+        location: ["AustraliaEast"]
+        locationCode: ["auea"]
+
+      - environmentName: "tst"
+        location: ["AustraliaEast", "AustraliaSouthEast"]
+        locationCode: ["auea", "ause"]
+
+  - name: serviceName
+    type: string
+    default: "terraform"
+
+stages:
+  - template: stages/terraform_plan_stage.yml
+    parameters:
+      environmentObjects: ${{ parameters.environmentObjects }}
+      serviceName: ${{ parameters.serviceName }}
+# - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main')}} :
+#   - ${{ each environmentObject in parameters.environmentObjects }} :
+#     - template: stages/bicep_deploy_stage.yml
+#       parameters:
+#         environmentObjects: ${{ parameters.environmentObjects }}
+#         templateFile: ${{ parameters.templateFile }}
+#         serviceName: ${{ parameters.serviceName }}
