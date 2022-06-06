@@ -20,3 +20,6 @@ steps:
           echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID]$subscriptionId"
           echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
           echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET]$env:servicePrincipalKey"
+          Write-Host "Tenant Id: " $env:ARM_TENANT_ID
+          Write-Host "Subscription Id: " echo $env:ARM_SUBSCRIPTION_ID
+          Write-Host "Client Id: " echo $env:ARM_CLIENT_ID
