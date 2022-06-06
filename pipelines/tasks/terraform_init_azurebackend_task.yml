@@ -1,6 +1,4 @@
 parameters:
-  - name: azureSubscriptionName
-    type: string
   - name: resourceGroupName
     type: string
   - name: storageAccountName
@@ -9,14 +7,10 @@ parameters:
     type: string
 
 steps:
-  - task: AzureCLI@2
-    displayName: Terraform init backend
-    inputs:
-      azureSubscription: ${{ parameters.azureSubscriptionName }}
-      scriptType: "pscore"
-      scriptLocation: "inlineScript"
-      inlineScript: |
-        terraform init -reconfigure `
-          -backend-config="container_name=${{ parameters.tfstateContainer }}" `
-          -backend-config="storage_account_name=${{ parameters.storageAccountName }}" `
-          -backend-config="resource_group_name=${{ parameters.resourceGroupName }}"
+  - bash: |
+      terraform init -reconfigure \
+        -backend-config="container_name=${{ parameters.tfstateContainer }}" \
+        -backend-config="storage_account_name=${{ parameters.storageAccountName }}" \
+        -backend-config="resource_group_name=${{ parameters.resourceGroupName }}"
+    displayName: Terraform Init
+    workingDirectory: $(Build.SourcesDirectory)
