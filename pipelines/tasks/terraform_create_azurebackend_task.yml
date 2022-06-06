@@ -24,6 +24,8 @@ steps:
         $container_name = $3
         $location = $4
 
+        Import-Module Az
+
         # create resource group
         try {
             $rg = (Get-AzResourceGroup -Name $resource_group_name).resourceid

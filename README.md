@@ -1,5 +1,9 @@
 # Introduction 
 
+## Azure service principal setup
+
+Check out 'New-ServicePrincipal.ps1', this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
+
 ## Set up local development environment
 
 Under the "environments" folder, create a file called **secrets.local.ps1**.  This file exists in gitignore, please check it is greyed out and is not included with git changes.
