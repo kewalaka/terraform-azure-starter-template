@@ -10,7 +10,7 @@ jobs:
     variables:
       - template: ../variables/${{ parameters.environmentName }}.job.vars.yml
     steps:
-      - template: ../tasks/terraform_fmt_task.yml.yml
+      - template: ../tasks/terraform_fmt_task.yml
         parameters:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
       - template: ../tasks/terraform_create_azurebackend_task.yml
