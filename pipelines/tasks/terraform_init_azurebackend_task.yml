@@ -8,7 +8,6 @@ parameters:
 
 steps:
   - bash: |
-      printenv | sort
       terraform init -reconfigure \
         -backend-config="container_name=${{ parameters.tfstateContainer }}" \
         -backend-config="storage_account_name=${{ parameters.storageAccountName }}" \

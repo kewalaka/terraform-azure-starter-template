@@ -17,8 +17,8 @@ steps:
       azureSubscription: ${{ parameters.azureSubscriptionName }}
       scriptType: "inlineScript"
       azurePowerShellVersion: latestVersion
-      pwsh: true      
-      inlineScript: |
+      pwsh: true
+      inline: |
         $resource_group_name = ${{ parameters.resourceGroupName }}
         $storage_account_name = ${{ parameters.storageAccountName }}
         $container_name = ${{ parameters.tfstateContainer }}

@@ -20,6 +20,3 @@ steps:
           Write-Host "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID]$subscriptionId"
           Write-Host "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
           Write-Host "##vso[task.setvariable variable=ARM_CLIENT_SECRET]$env:servicePrincipalKey"
-          Write-Host "Tenant Id: " $env:tenantId
-          Write-Host "Service Principal Id: " $env:servicePrincipalId
-          Write-Host "Service Principal Key is null: " $($null -eq $env:servicePrincipalKey )
