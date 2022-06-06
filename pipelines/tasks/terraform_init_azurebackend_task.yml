@@ -10,13 +10,13 @@ parameters:
 
 steps:
   - task: AzureCLI@2
-    displayName: Terraform init
+    displayName: Terraform init backend
     inputs:
       azureSubscription: ${{ parameters.azureSubscriptionName }}
       scriptType: "pscore"
       scriptLocation: "inlineScript"
       inlineScript: |
-        terraform init -reconfigure \
-          -backend-config="container_name=${{ parameters.tfstateContainer }}" \
-          -backend-config="storage_account_name=${{ parameters.storageAccountName }}" \
+        terraform init -reconfigure `
+          -backend-config="container_name=${{ parameters.tfstateContainer }}" `
+          -backend-config="storage_account_name=${{ parameters.storageAccountName }}" `
           -backend-config="resource_group_name=${{ parameters.resourceGroupName }}"

@@ -6,7 +6,7 @@ parameters:
   - name: locationCode
     type: string    
 jobs:
-  - job: build_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
+  - job: plan_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
     variables:
       - template: ../variables/${{ parameters.environmentName }}.job.vars.yml
     steps:

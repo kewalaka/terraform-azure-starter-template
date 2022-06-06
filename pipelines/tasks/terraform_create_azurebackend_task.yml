@@ -12,7 +12,7 @@ parameters:
 
 steps:
   - task: AzureCLI@2
-    displayName: Azure CLI
+    displayName: Check for TF Azure backend
     inputs:
       azureSubscription: ${{ parameters.azureSubscriptionName }}
       scriptType: "pscore"
