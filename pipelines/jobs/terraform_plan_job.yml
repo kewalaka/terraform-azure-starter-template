@@ -3,6 +3,8 @@ parameters:
     type: string
   - name: serviceName
     type: string
+  - name: locationCode
+    type: string    
 jobs:
   - job: build_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
     variables:
