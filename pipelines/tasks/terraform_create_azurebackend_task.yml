@@ -1,13 +1,13 @@
 parameters:
   - name: azureSubscriptionName
     type: string
-  - name: resourceGroupName
+  - name: tfstateResourceGroupName
     type: string
-  - name: storageAccountName
+  - name: tfstateStorageAccountName
     type: string
-  - name: tfstateContainer
+  - name: tfstateStorageContainerName
     type: string
-  - name: location
+  - name: tfstateLocation
     type: string
 
 steps:
@@ -19,10 +19,10 @@ steps:
       azurePowerShellVersion: latestVersion
       pwsh: true
       inline: |
-        $resource_group_name = '${{ parameters.resourceGroupName }}'
-        $storage_account_name = '${{ parameters.storageAccountName }}'
-        $container_name = '${{ parameters.tfstateContainer }}'
-        $location = '${{ parameters.location }}'
+        $resource_group_name = '${{ parameters.tfstateResourceGroupName }}'
+        $storage_account_name = '${{ parameters.tfstateStorageAccountName }}'
+        $container_name = '${{ parameters.tfstateStorageContainerName }}'
+        $location = '${{ parameters.tfstateLocation }}'
 
         # create resource group
         try {

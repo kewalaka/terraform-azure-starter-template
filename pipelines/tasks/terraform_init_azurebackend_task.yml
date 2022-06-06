@@ -1,16 +1,16 @@
 parameters:
-  - name: resourceGroupName
+  - name: tfstateResourceGroupName
     type: string
-  - name: storageAccountName
+  - name: tfstateStorageAccountName
     type: string
-  - name: tfstateContainer
+  - name: tfstateStorageContainerName
     type: string
 
 steps:
   - bash: |
       terraform init -reconfigure \
-        -backend-config="container_name=${{ parameters.tfstateContainer }}" \
-        -backend-config="storage_account_name=${{ parameters.storageAccountName }}" \
-        -backend-config="resource_group_name=${{ parameters.resourceGroupName }}"
+        -backend-config="container_name=${{ parameters.tfstateStorageContainerName }}" \
+        -backend-config="storage_account_name=${{ parameters.tfstateStorageAccountName }}" \
+        -backend-config="resource_group_name=${{ parameters.tfstateResourceGroupName }}"
     displayName: Terraform Init
     workingDirectory: $(Build.SourcesDirectory)
