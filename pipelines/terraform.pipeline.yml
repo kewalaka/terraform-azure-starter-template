@@ -11,3 +11,14 @@ stages:
         - environmentName: "dev"
           location: ["AustraliaEast"]
           locationCode: ["auea"]
+
+  - template: terraform.template.yml
+    parameters:
+      environmentObjects:
+        - environmentName: "tst"
+          location: ["AustraliaEast"]
+          locationCode: ["auea"]
+
+        - environmentName: "tst"
+          location: ["AustraliaSouthEast"]
+          locationCode: ["ause"]
