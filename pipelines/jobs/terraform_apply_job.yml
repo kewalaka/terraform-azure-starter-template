@@ -4,25 +4,37 @@ parameters:
   - name: serviceName
     type: string
   - name: locationCode
-    type: string    
+    type: string
+
+# only allowed to run (following approval) if terraform plan succeeded.
+dependsOn: plan_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
+# do not run Terrform Apply if plan fails
+condition: succeeded() # and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'],'true'))
 jobs:
   - job: apply_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
+  - deployment: TerraformApply
+    pool:
+      vmImage: ubuntu-latest
     variables:
       - template: ../variables/${{ parameters.environmentName }}.job.vars.yml
-    steps:
-      # fetch credentials from Az CLI into environment vars          
-      - template: ../tasks/terraform_creds_task.yml
-        parameters:
-          azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
-      # terraform init
-      - template: ../tasks/terraform_init_azurebackend_task.yml
-        parameters:
-          tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
-          tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
-          tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
-      # terraform validate
-      - template: ../tasks/terraform_validate_task.yml
-      # terraform apply
-      - template: ../tasks/terraform_apply_task.yml
-        parameters:
-          environmentTFVARS: ${{ variables.environmentTFVARS}}
+    environment: "Environment_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}"
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            # fetch credentials from Az CLI into environment vars
+            - template: ../tasks/terraform_creds_task.yml
+              parameters:
+                azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
+            # terraform init
+            - template: ../tasks/terraform_init_azurebackend_task.yml
+              parameters:
+                tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
+                tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
+                tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
+            # terraform validate
+            - template: ../tasks/terraform_validate_task.yml
+            # terraform apply
+            - template: ../tasks/terraform_apply_task.yml
+              parameters:
+                environmentTFVARS: ${{ variables.environmentTFVARS}}
