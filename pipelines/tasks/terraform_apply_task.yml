@@ -1,0 +1,23 @@
+parameters:
+  - name: environmentTFVARS
+    type: string
+
+steps:
+  # Run terraform plan (output to tfplan) & finally terraform apply to deploy the infrastructure changes
+  - bash: |
+      echo "Running terraform plan"
+      terraform plan -input=false -out=tfplan \
+        -var-file=${{ parameters.environmentTFVARS }} \
+        -var-file="./environments/global.settings"
+        -detailed-exitcode
+      if [ $? -eq 0 ]; then
+          echo "No changes, not applying"
+      elif [ $? -eq 1 ]; then
+          echo "Terraform plan failed"
+          exit 1
+      elif [ $? -eq 2 ]; then
+          echo "Changes detected, running terraform apply"
+          terraform apply -auto-approve -input=false tfplan
+      fi      
+    displayName: Terraform Apply
+    workingDirectory: $(Build.SourcesDirectory)
