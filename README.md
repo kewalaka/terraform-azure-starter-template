@@ -55,6 +55,11 @@ terraform fmt -recursive
 
 Secrets are to be sourced from KeyVault **only**.  Terrafrom code must not contain sensitive variables.
 
+### Secrets for the Terraform remote state (AzureRM backend)
+
+The pipeline task **terraform_creds_task.yml** uses AzCli to authenticate using the DevOps service connection.
+
+This allows the Terraform state parameters to be sourced and stored for subsequent pipeline tasks without requiring additional infrastructure or configuration.
 
 ## Environment specifics
 
