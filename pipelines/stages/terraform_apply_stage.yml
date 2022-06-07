@@ -5,25 +5,25 @@ parameters:
     type: string
 
 stages:
-  - stage: "${{ parameters.serviceName }}_apply"
+  - stage:
+      "${{ parameters.serviceName }}_apply"
+      # only allowed to run (following approval) if terraform plan succeeded.
+    dependsOn: plan_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
+    # do not run Terrform Apply if plan fails
+    condition: succeeded() # and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'],'true'))
     jobs:
+      - deployment: TerraformApply
+      pool:
+        vmImage: ubuntu-latest
       - ${{ each environmentObject in parameters.environmentObjects }}:
-          - ${{ each locationCode in environmentObject.locationCode }}:
-              - template: ../jobs/terraform_apply_job.yml
-                parameters:
-                  environmentName: ${{ environmentObject.environmentName }}
-                  serviceName: ${{ parameters.serviceName }}
-                  locationCode: ${{ locationCode }}
-                # only allowed to run (following approval) if terraform plan succeeded.
-                dependsOn: plan_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}
-                # do not run Terrform Apply if plan fails
-                condition: succeeded() # and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'],'true'))
-                jobs:
-                  - deployment: TerraformApply
-                    pool:
-                      vmImage: ubuntu-latest
-                    environment: "Environment_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}"
-                    strategy:
-                      runOnce:
-                        deploy:
-                          steps:
+        - ${{ each locationCode in environmentObject.locationCode }}:
+            environment: "Environment_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}"
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - template: ../jobs/terraform_apply_job.yml
+                      parameters:
+                        environmentName: ${{ environmentObject.environmentName }}
+                        serviceName: ${{ parameters.serviceName }}
+                        locationCode: ${{ locationCode }}
