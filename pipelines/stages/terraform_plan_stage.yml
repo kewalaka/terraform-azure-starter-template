@@ -9,6 +9,7 @@ stages:
       - ${{ each locationCode in environmentObject.locationCode }}:
           - stage: plan_${{ parameters.serviceName }}_${{ locationCode }}_${{ environmentObject.environmentName }}
             displayName: Terraform Plan ${{ locationCode }} ${{ environmentObject.environmentName }}
+            dependsOn: []
             jobs:
               - template: ../jobs/terraform_plan_job.yml
                 parameters:
