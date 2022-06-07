@@ -12,14 +12,17 @@ steps:
           -detailed-exitcode
 
       switch ($lastExitCode) {
-          0 { Write-Host "No changes to infrastructure, skipping Terraform Apply" }
+          0 {
+              Write-Host "No changes to infrastructure, skipping Terraform Apply"
+              exit 0
+          }
           1 { 
               Write-Host "Terraform plan failed"
               exit 1 
           }
           2 {
               Write-Host "Changes detected, running terraform apply"
-              terraform apply -auto-approve -input=false tfplan 
+              terraform apply -auto-approve -input=false tfplan
           }
           Default {
               Write-Host "Unknown error code - $lastExitCode - aborting Terraform Apply"
