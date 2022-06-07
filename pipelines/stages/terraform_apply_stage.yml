@@ -8,7 +8,7 @@ stages:
   - ${{ each environmentObject in parameters.environmentObjects }}:
       - ${{ each locationCode in environmentObject.locationCode }}:
           - stage: apply_${{ parameters.serviceName }}_${{ locationCode }}_${{ environmentObject.environmentName }}
-            displayName: Terraform Apply ${{ locationCode }} ${{ environmentObject.environmentName }}
+            displayName: Terraform Apply (${{ locationCode }} - ${{ environmentObject.environmentName }})
             # only allowed to run (following approval) if terraform plan succeeded.
             dependsOn: plan_${{ parameters.serviceName }}_${{ locationCode }}_${{ environmentObject.environmentName }}
             # do not run Terrform Apply if plan fails
