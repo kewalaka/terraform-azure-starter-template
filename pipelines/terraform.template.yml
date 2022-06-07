@@ -19,4 +19,5 @@ stages:
     parameters:
       environmentObjects: ${{ parameters.environmentObjects }}
       serviceName: ${{ parameters.serviceName }}
+  - template: stages/terraform_apply_stage.yml      
 
