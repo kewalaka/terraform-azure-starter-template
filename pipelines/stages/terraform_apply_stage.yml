@@ -12,18 +12,18 @@ stages:
     # do not run Terrform Apply if plan fails
     condition: succeeded() # and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'],'true'))
     jobs:
-      - deployment: TerraformApply
-        pool:
-          vmImage: ubuntu-latest
-        - ${{ each environmentObject in parameters.environmentObjects }}:
-          - ${{ each locationCode in environmentObject.locationCode }}:
-              environment: "Environment_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}"
-              strategy:
-                runOnce:
-                  deploy:
-                    steps:
-                      - template: ../jobs/terraform_apply_job.yml
-                        parameters:
-                          environmentName: ${{ environmentObject.environmentName }}
-                          serviceName: ${{ parameters.serviceName }}
-                          locationCode: ${{ locationCode }}
+      - ${{ each environmentObject in parameters.environmentObjects }}:
+        - ${{ each locationCode in environmentObject.locationCode }}:
+          - deployment: TerraformApply
+            pool:
+              vmImage: ubuntu-latest
+            environment: "Environment_${{ parameters.serviceName }}_${{ parameters.locationCode }}_${{ parameters.environmentName }}"
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - template: ../jobs/terraform_apply_job.yml
+                      parameters:
+                        environmentName: ${{ environmentObject.environmentName }}
+                        serviceName: ${{ parameters.serviceName }}
+                        locationCode: ${{ locationCode }}
