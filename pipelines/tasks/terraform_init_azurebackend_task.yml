@@ -7,10 +7,10 @@ parameters:
     type: string
 
 steps:
-  - bash: |
-      terraform init -reconfigure \
-        -backend-config="container_name=${{ parameters.tfstateStorageContainerName }}" \
-        -backend-config="storage_account_name=${{ parameters.tfstateStorageAccountName }}" \
+  - pwsh: |
+      terraform init -reconfigure `
+        -backend-config="container_name=${{ parameters.tfstateStorageContainerName }}" `
+        -backend-config="storage_account_name=${{ parameters.tfstateStorageAccountName }}" `
         -backend-config="resource_group_name=${{ parameters.tfstateResourceGroupName }}"
     displayName: Terraform Init
     workingDirectory: $(Build.SourcesDirectory)

@@ -9,13 +9,15 @@ stages:
     parameters:
       environmentObjects:
         - environmentName: "dev"
-          location: ["AustraliaEast"]
           locationCode: ["auea"]
 
         - environmentName: "tst"
-          location: ["AustraliaEast"]
           locationCode: ["auea"]
 
-        - environmentName: "tst"
-          location: ["AustraliaSouthEast"]
-          locationCode: ["ause"]
+  # code should be checked into the 'main' branch to go to production
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main')}}:
+      - template: terraform.template.yml
+        parameters:
+          environmentObjects:
+            - environmentName: "prd"
+              locationCode: ["auea"]
