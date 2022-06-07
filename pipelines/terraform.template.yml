@@ -3,6 +3,7 @@ parameters:
     type: object
   - name: serviceName
     type: string
+    default: 'terraform'
 
 stages:
   - template: stages/terraform_plan_stage.yml
