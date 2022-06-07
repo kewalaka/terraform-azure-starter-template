@@ -12,8 +12,8 @@ jobs:
     steps:
       # check code is formatted correctly
       - template: ../tasks/terraform_fmt_task.yml
-      # create terraform storage container if not already there
-      - template: ../tasks/terraform_create_azurebackend_task.yml      
+      # check & create terraform storage container if not already there
+      - template: ../tasks/terraform_check_azurebackend_task.yml      
         parameters:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
           tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
@@ -24,9 +24,15 @@ jobs:
       - template: ../tasks/terraform_creds_task.yml
         parameters:
           azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
-      # terraform init          
+      # terraform init
       - template: ../tasks/terraform_init_azurebackend_task.yml
         parameters:
           tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
           tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
           tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
+      # terraform validate
+      - template: ../tasks/terraform_validate_task.yml
+      # terraform plan
+      - template: ../tasks/terraform_plan_task.yml
+        parameters:
+          environmentTFVARS: ${{ variables.environmentTFVARS}}

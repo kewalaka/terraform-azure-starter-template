@@ -1,0 +1,5 @@
+steps:
+  # check terraform code is valid prior to plan
+  - bash: terraform validate
+    displayName: Terraform Validate
+    workingDirectory: $(Build.SourcesDirectory)

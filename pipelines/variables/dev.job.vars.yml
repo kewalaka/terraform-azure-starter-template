@@ -4,3 +4,4 @@ variables:
   tfstateLocation: "AustraliaEast"
   tfstateStorageAccountName: "sttfstuff023"
   tfstateStorageContainerName: "terraform"
+  environmentTFVARS: "./environments/dev.terraform.settings"
