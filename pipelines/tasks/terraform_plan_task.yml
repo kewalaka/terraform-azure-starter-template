@@ -5,11 +5,11 @@ parameters:
 steps:
   # Terraform Plan - output changes to be made to the console for review
   # TODO if we output to json is that then comparable?
-  - bash: |
-      echo "Running terraform plan"
-      terraform plan -input=false \
-        -var-file=${{ parameters.environmentTFVARS }} \
-        -var-file="./environments/global.terraform.settings" \
-        -detailed-exitcode
+  - pwsh: |
+      Write-Host "Running terraform plan"
+      terraform plan -input=false `
+          -var-file=${{ parameters.environmentTFVARS }} `
+          -var-file="./environments/global.terraform.settings" `
+          -detailed-exitcode
     displayName: Terraform Plan
     workingDirectory: $(Build.SourcesDirectory)

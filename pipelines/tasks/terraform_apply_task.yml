@@ -4,20 +4,27 @@ parameters:
 
 steps:
   # Run terraform plan (output to tfplan) & finally terraform apply to deploy the infrastructure changes
-  - bash: |
-      echo "Running terraform plan"
-      terraform plan -input=false -out=tfplan \
-        -var-file=${{ parameters.environmentTFVARS }} \
-        -var-file="./environments/global.settings"
-        -detailed-exitcode
-      if [ $? -eq 0 ]; then
-          echo "No changes, not applying"
-      elif [ $? -eq 1 ]; then
-          echo "Terraform plan failed"
-          exit 1
-      elif [ $? -eq 2 ]; then
-          echo "Changes detected, running terraform apply"
-          terraform apply -auto-approve -input=false tfplan
-      fi      
+  - pwsh: |
+      Write-Host "Running terraform plan"
+      terraform plan -input=false -out=tfplan `
+          -var-file= ${{ parameters.environmentTFVARS }} `
+          -var-file="./environments/global.settings" `
+          -detailed-exitcode
+
+      switch ($lastExitCode) {
+          0 { Write-Host "No changes to infrastructure, skipping Terraform Apply" }
+          1 { 
+              Write-Host "Terraform plan failed"
+              exit 1 
+          }
+          2 {
+              Write-Host "Changes detected, running terraform apply"
+              terraform apply -auto-approve -input=false tfplan 
+          }
+          Default {
+              Write-Host "Unknown error code - $lastExitCode - aborting Terraform Apply"
+              exit 1 
+          }
+      }
     displayName: Terraform Apply
     workingDirectory: $(Build.SourcesDirectory)

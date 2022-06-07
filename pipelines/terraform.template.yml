@@ -1,18 +1,8 @@
 parameters:
   - name: environmentObjects
     type: object
-    default:
-      - environmentName: "dev"
-        location: ["AustraliaEast"]
-        locationCode: ["auea"]
-
-      - environmentName: "tst"
-        location: ["AustraliaEast", "AustraliaSouthEast"]
-        locationCode: ["auea", "ause"]
-
   - name: serviceName
     type: string
-    default: "terraform"
 
 stages:
   - template: stages/terraform_plan_stage.yml

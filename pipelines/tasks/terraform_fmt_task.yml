@@ -1,4 +1,4 @@
 steps:
-  - bash: terraform fmt -check -recursive
+  - pwsh: terraform fmt -check -recursive
     displayName: Terraform Format Check
     workingDirectory: $(Build.SourcesDirectory)
