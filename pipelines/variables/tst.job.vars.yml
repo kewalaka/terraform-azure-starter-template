@@ -1,0 +1,7 @@
+variables:
+  AzureRMServiceConnection: "AzureRM"
+  tfstateResourceGroupName: "rg-terraform-playground"
+  tfstateLocation: "AustraliaEast"
+  tfstateStorageAccountName: "sttfstuff023"
+  tfstateStorageContainerName: "terraform"
+  environmentTFVARS: "./environments/tst.terraform.settings"
