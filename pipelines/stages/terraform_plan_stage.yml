@@ -5,11 +5,11 @@ parameters:
     type: string
 
 stages:
-  - stage: "${{ parameters.serviceName }}_plan"
-    displayName: Terraform Plan  
-    jobs:
-      - ${{ each environmentObject in parameters.environmentObjects }}:
-          - ${{ each locationCode in environmentObject.locationCode }}:
+  - ${{ each environmentObject in parameters.environmentObjects }}:
+      - ${{ each locationCode in environmentObject.locationCode }}:
+          - stage: plan_${{ parameters.serviceName }}_${{ locationCode }}_${{ environmentObject.environmentName }}
+            displayName: Terraform Plan ${{ locationCode }} ${{ environmentObject.environmentName }}
+            jobs:
               - template: ../jobs/terraform_plan_job.yml
                 parameters:
                   environmentName: ${{ environmentObject.environmentName }}
