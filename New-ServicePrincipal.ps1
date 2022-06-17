@@ -45,7 +45,7 @@ if ($connection) {
     }
 
     $params = @{
-        DisplayName = 'sp_ADO_Terraform_CICD_YAMLTemplates' 
+        DisplayName = $servicePrincipalDisplayName
         Scope       = "/subscriptions/$subscription_id/resourceGroups/$resource_group_name"
         Role        = 'Contributor'
     }
