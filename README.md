@@ -27,8 +27,8 @@ Next, after cloning the repository, from the root folder, initialise Terraform. 
 # - the storage account and resource group is environment specific
 terraform init -reconfigure `
     -backend-config="container_name=terraform" `
-    -backend-config="storage_account_name=uocstdataplatformdev" `
-    -backend-config="resource_group_name=rg-dataplatform-dev-eastau-001"
+    -backend-config="storage_account_name=sttfstuff023" `
+    -backend-config="resource_group_name=rg-terraform-playground"
 ```
 
 From that point on you can run the following to validate and run plans:
