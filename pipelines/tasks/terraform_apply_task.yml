@@ -7,7 +7,7 @@ steps:
   - pwsh: |
       Write-Host 'Running terraform plan'
       terraform plan -input=false -out=tfplan `
-          -var-file='${{ parameters.environmentTFVARS }}'' `
+          -var-file='${{ parameters.environmentTFVARS }}' `
           -var-file='./environments/global.settings' `
           -detailed-exitcode
 
