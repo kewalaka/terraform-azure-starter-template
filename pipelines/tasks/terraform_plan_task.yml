@@ -6,10 +6,25 @@ steps:
   # Terraform Plan - output changes to be made to the console for review
   # TODO if we output to json is that then comparable?
   - pwsh: |
-      Write-Host "Running terraform plan"
-      terraform plan -input=false `
-          -var-file=${{ parameters.environmentTFVARS }} `
-          -var-file="./environments/global.terraform.settings" `
+      Write-Host 'Running terraform plan'
+      terraform plan -input=false -out=tfplan `
+          -var-file='${{ parameters.environmentTFVARS }}' `
+          -var-file='./environments/global.terraform.settings' `
           -detailed-exitcode
+
+      switch ($lastExitCode) {
+          0 {
+              Write-Host 'No changes to infrastructure detected.'
+              exit 0
+          }
+          1 { 
+              Write-Host 'Terraform plan failed.'
+              exit 1 
+          }
+          2 {
+              Write-Host 'Changes to infrastructure are required.'
+              exit 0
+          }
+      }
     displayName: Terraform Plan
     workingDirectory: $(Build.SourcesDirectory)
