@@ -12,6 +12,10 @@ jobs:
     steps:
       # check code is formatted correctly
       - template: ../tasks/terraform_fmt_task.yml
+      # fetch credentials from Az CLI into environment vars          
+      - template: ../tasks/terraform_creds_task.yml
+        parameters:
+          azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
       # check & create terraform storage container if not already there
       - template: ../tasks/terraform_check_azurebackend_task.yml      
         parameters:
@@ -20,10 +24,6 @@ jobs:
           tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
           tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
           tfstateLocation: ${{ variables.tfstateLocation}}
-      # fetch credentials from Az CLI into environment vars          
-      - template: ../tasks/terraform_creds_task.yml
-        parameters:
-          azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
       # terraform init
       - template: ../tasks/terraform_init_azurebackend_task.yml
         parameters:

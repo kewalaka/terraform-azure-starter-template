@@ -21,6 +21,14 @@ jobs:
             - template: ../tasks/terraform_creds_task.yml
               parameters:
                 azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
+            # The Terraform code is checked out even though this is a deployment job
+            # In theory could just take the tfplan from the build stage, but seems better
+            # to first check if there are changes in the environment
+            # TODO a future check would be to compare between the plan and apply stages
+            # this would need to compare the json output as the binary tfplan is different
+            # even when the changes to be done are the same
+            - checkout: self
+              clean: true                
             # terraform init
             - template: ../tasks/terraform_init_azurebackend_task.yml
               parameters:

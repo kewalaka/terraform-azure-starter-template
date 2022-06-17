@@ -43,11 +43,3 @@ data "azurerm_client_config" "current" {}
 data "azurerm_resource_group" "rg_terraform" {
   name = var.resource_group_name
 }
-
-resource "azurerm_resource_group" "rg_terraform" {
-  name     = data.azurerm_resource_group.rg_terraform.name
-  location = data.azurerm_resource_group.rg_terraform.location
-  tags = {
-    company = var.company
-  }
-}

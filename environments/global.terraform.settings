@@ -4,4 +4,4 @@
 #
 # Sensitive values should be added to Keyvault and sourced from there.
 #
-company                    = "kewalaka"
+#company                    = "kewalaka"
