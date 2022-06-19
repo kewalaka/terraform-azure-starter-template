@@ -7,4 +7,4 @@ variables:
   tfstateStorageAccountName: "sttfstuff023"
   tfstateStorageContainerName: "terraform"
   # these are the environment specific settings that relate to the infrastructure being deployed.
-  environmentTFVARS: "./environments/dev.terraform.settings"
+  environmentTFVARS: "./environments/dev.terraform.tfvars"

@@ -9,7 +9,7 @@ steps:
       Write-Host 'Running terraform plan'
       terraform plan -input=false -out=tfplan `
           -var-file='${{ parameters.environmentTFVARS }}' `
-          -var-file='./environments/global.terraform.settings' `
+          -var-file='./environments/global.terraform.tfvars' `
           -detailed-exitcode
 
       switch ($lastExitCode) {

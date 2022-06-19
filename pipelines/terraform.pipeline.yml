@@ -1,9 +1,22 @@
 trigger:
-  - none
+  batch: true
+  branches:
+    include:
+    - '*'
+  paths:
+    exclude:
+    - README.md
+      New-ServicePrincipal.ps1
+      /docs/*
+
+# alternative to turn off triggers
+# trigger:
+#   - none
 
 pool:
   vmImage: "ubuntu-latest"
 
+# DEFAULT: one dev environment
 stages:
   - template: terraform.template.yml
     parameters:
@@ -11,13 +24,34 @@ stages:
         - environmentName: "dev"
           locationCode: ["auea"]
 
-        - environmentName: "tst"
-          locationCode: ["auea"]
 
-  # code should be checked into the 'main' branch to go to production
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main')}}:
-      - template: terraform.template.yml
-        parameters:
-          environmentObjects:
-            - environmentName: "prd"
-              locationCode: ["auea"]
+# SAMPLE: one dev & a test environment in two locations
+#
+# stages:
+#   - template: terraform.template.yml
+#     parameters:
+#       environmentObjects:
+#         - environmentName: "dev"
+#           locationCode: ["auea"]
+#        - environmentName: "tst"
+#          locationCode: ["auea", "ause"]
+
+# SAMPLE: dev, test & prod with a gate to check that prod code can only be deployed from main
+#
+# stages:
+#   - template: terraform.template.yml
+#     parameters:
+#       environmentObjects:
+#         - environmentName: "dev"
+#           locationCode: ["auea"]
+#
+#         - environmentName: "tst"
+#           locationCode: ["auea"]
+#
+#   # code should be checked into the 'main' branch to go to production
+#   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main')}}:
+#       - template: terraform.template.yml
+#         parameters:
+#           environmentObjects:
+#             - environmentName: "prd"
+#               locationCode: ["auea"]

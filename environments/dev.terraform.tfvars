@@ -4,4 +4,4 @@
 #
 # Sensitive values should be added to Keyvault and sourced from there.
 #
-resource_group_name            = "rg-terraform-playground"
+resource_group_name = "rg-terraform-playground"
