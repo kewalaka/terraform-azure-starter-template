@@ -23,7 +23,9 @@ Start adding Terraform code!
 
 ## Yowser!  Go slower
 
-Check out [Getting started](/docs/Getting%20started.md)
+To go right back to the beginning, check out [Getting started](/docs/Getting-started.md)
+
+TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Project.md) better...
 
 ## Do you have a sample?
 
@@ -35,7 +37,7 @@ Check out 'New-ServicePrincipal.ps1', this code will create a resource group (RG
 
 ## Local development environment
 
-See these [instructions](/docs/Setup%20a%20local%20dev%20environment.md) for how to set up a local development environment.
+See these [instructions](/docs/Setup-a-local-dev-environment.md) for how to set up a local development environment.
 
 ## Updating Terraform versions
 
