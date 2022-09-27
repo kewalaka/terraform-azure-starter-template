@@ -4,9 +4,11 @@ Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-
 
 This is an opinionated template that illustrates how to build a devops pipeline for a Terraform project using Azure blob storage for remote state management.
 
-Using simple a customisation to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) you can easily add multiple environments and locations.
+The pipeline logic is split into stages, jobs and tasks for composability, via simple changes to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) it is easy to add multiple environments and locations (samples included in comments!).
 
-No secrets need to be held in Azure DevOps, everything comes from an AzureRM Service Connection.
+All secrets should be stored in KeyVault (or equivalent), the service principal credentials required to bootstrap Terraform is obtained via the AzureRM Service Connection during the pipeline run.  
+
+This is a sample, there is more that can be done to make it better.  Pull requests are welcome!
 
 ## "I know what I'm doing, show me the money!"
 
