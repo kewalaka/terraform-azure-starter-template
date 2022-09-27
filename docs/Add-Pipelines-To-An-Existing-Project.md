@@ -1,5 +1,5 @@
 # Add a pipeline to an existing project
-Stu's pipeline template project is available publicly from this location:
+Stu's pipeline template project is available publicly from: https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/
 
 ![](images/ado-yamltemplates-project.png)
 
