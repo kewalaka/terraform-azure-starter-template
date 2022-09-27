@@ -1,4 +1,4 @@
-Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status][![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
+Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
 
 # Introduction 
 
@@ -14,8 +14,8 @@ No secrets need to be held in Azure DevOps, everything comes from an AzureRM Ser
 * Copy the pipelines & environments folder to your project
 * Optionally, copy the contents of the root folder and you've got a basic pre-configured starting point for the root module.
 * In Azure DevOps, create an AzureRM service connection.
-* Specify basic environment parameters in pipelines\variables\dev.jobs.vars.yml
-* In Azure DevOps, register a new pipeline pointing to pipelines\terraform.pipeline.yml
+* Specify basic environment parameters in [/pipelines/variables/dev.jobs.vars.yml](/pipelines/variables/dev.jobs.vars.yml)
+* In Azure DevOps, register a new pipeline pointing to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) - the entry point for the pipeline.
 
 Start adding Terraform code!
 
