@@ -5,7 +5,6 @@
 In this section, we'll cover
 * How to get Azure DevOps set up
 * Create your first project
-* Clone an existing template repository
 * Commit your first check-in to your DevOps project.
 
 You'll need:
@@ -56,16 +55,26 @@ Choose "Clone to VSCode"
 ![](images/ado-clonenewproject.png)
 
 You'll be prompted to authenticate
+
 ![](images/vscode-authenticate.png)
+
 Then the repository will start cloning:
+
 ![](images/vscodenotification-cloningrepo.png)
 
 Select to "open" in an new workspace:
+
 ![](images/vscodenotification-openrepo.png)
 
 ## Add some code
 
 Select the source control button:
+
 ![](images/vscode-check-ing.png)
+
 Enter a description of what is being check-in, e.g. "initial commit", and press Ctrl+[Enter]
+
+## What next?
+
+Now you've created your first project, you can use a template to [add a pipeline to an existing project](/docs/Add%20Pipelines%20To%20An%20Existing%20Project.md).
 

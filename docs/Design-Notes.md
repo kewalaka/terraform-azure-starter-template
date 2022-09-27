@@ -43,6 +43,9 @@ terraform plan -input=false -out=tfplan `
    -var-file="./environments/global.terraform.tfvars"
 ```
 
+## Everything CLI is PowerShell
+
+Sample documentation often mixes up AZ CLI, Bash and PowerShell.  In most cases everything herein is PowerShell.
 
 ## Updating Terraform versions
 

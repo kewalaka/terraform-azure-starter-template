@@ -1,4 +1,31 @@
+Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status][![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
+
 # Introduction 
+
+This is an opinionated template that illustrates how to build a devops pipeline for a Terraform project using Azure blob storage for remote state management.
+
+Using simple a customisation to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) you can easily add multiple environments and locations.
+
+No secrets need to be held in Azure DevOps, everything comes from an AzureRM Service Connection.
+
+## "I know what I'm doing, show me the money!"
+
+* Clone this repo.
+* Copy the pipelines & environments folder to your project
+* Optionally, copy the contents of the root folder and you've got a basic pre-configured starting point for the root module.
+* In Azure DevOps, create an AzureRM service connection.
+* Specify basic environment parameters in pipelines\variables\dev.jobs.vars.yml
+* In Azure DevOps, register a new pipeline pointing to pipelines\terraform.pipeline.yml
+
+Start adding Terraform code!
+
+## Yowser!  Go slower
+
+Check out [Getting started](/docs/Getting%20started.md)
+
+## Do you have a sample?
+
+[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultRBAC)!
 
 ## Azure service principal setup
 
@@ -10,4 +37,4 @@ See these [instructions](/docs/Setup%20a%20local%20dev%20environment.md) for how
 
 ## Updating Terraform versions
 
-Main.tf includes logic to pin to a specific version of Terraform and providers in use (AzureRM & AzureAD).
+The included [main.tf](main.tf) includes logic to pin to a specific version of Terraform and providers in use (AzureRM & AzureAD).
