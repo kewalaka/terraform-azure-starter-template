@@ -33,7 +33,7 @@ TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Proje
 
 ## Azure service principal setup
 
-Check out 'New-ServicePrincipal.ps1', this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
+Check out [New.ServicePrincipal.ps1](./New-ServicePrincipal.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
 
 ## Local development environment
 
@@ -42,3 +42,7 @@ See these [instructions](/docs/Setup-a-local-dev-environment.md) for how to set 
 ## Updating Terraform versions
 
 The included [main.tf](main.tf) includes logic to pin to a specific version of Terraform and providers in use (AzureRM & AzureAD).
+
+## Why did you do it like *that*?
+
+There are a few [Design Notes](/docs/Design-Notes.md) in the Wiki with some background, it is WIP.
