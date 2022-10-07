@@ -6,13 +6,15 @@ steps:
   # Set AzureRM credentials to environment variables using Terraform's convention.
   # https://www.terraform.io/language/settings/backends/azurerm
   - task: AzureCLI@2
-    displayName: Set ARM environment variables
+    displayName: Fetch Azure RM credentials
     inputs:
       azureSubscription: ${{ parameters.azureSubscriptionName }}
       scriptType: "pscore"
-      # this is required so that the service principal details are available
+      # 'addSpnToEnvironment' is required so that the service principal details are available
       addSpnToEnvironment: true
       scriptLocation: "inlineScript"
+      # the service principal settings are saved to the 'well known' terraform AzureRM ARM variables
+      # for the duration of the stage 
       inlineScript: |
           Write-Host "Setting Terraform environment variables for Azure RM"
           $subscriptionId = az account show --query id --output tsv
