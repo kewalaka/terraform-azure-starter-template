@@ -7,7 +7,7 @@ steps:
   # TODO if we output to json is that then comparable?
   - pwsh: |
       Write-Host 'Running terraform plan'
-      terraform plan -input=false -out=tfplan `
+      terraform plan -input=false -out=$(Build.ArtifactStagingDirectory)/tfplan `
           -var-file='${{ parameters.environmentTFVARS }}' `
           -var-file='./environments/global.terraform.tfvars' `
           -detailed-exitcode
@@ -28,3 +28,27 @@ steps:
       }
     displayName: Terraform Plan
     workingDirectory: $(Build.SourcesDirectory)
+
+    # copy the terraform code and tfplan
+  - task: CopyFiles@2
+    displayName: Copy files to artifact directory
+    inputs:
+        SourceFolder: "$(Build.SourcesDirectory)"
+        Contents: |
+            **/*
+            !.git/**/*
+            !.terraform/**/*
+            !.vscode/**/*
+            !.gitignore
+            !.terraform.lock.hcl
+            !README.md
+            !docs/**/*
+            !helpers/**/*
+        TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+    # publish the plan to the pipeline
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish artifact: terraform code'
+    inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: terraform

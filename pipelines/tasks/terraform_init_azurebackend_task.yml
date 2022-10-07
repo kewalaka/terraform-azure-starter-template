@@ -5,6 +5,9 @@ parameters:
     type: string
   - name: tfstateStorageContainerName
     type: string
+  - name: workingDirectory
+    type: string
+    default: $(Build.SourcesDirectory)
 
 steps:
   - pwsh: |
@@ -13,4 +16,4 @@ steps:
         -backend-config="storage_account_name=${{ parameters.tfstateStorageAccountName }}" `
         -backend-config="resource_group_name=${{ parameters.tfstateResourceGroupName }}"
     displayName: Terraform Init
-    workingDirectory: $(Build.SourcesDirectory)
+    workingDirectory: ${{ parameters.workingDirectory }}

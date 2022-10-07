@@ -3,11 +3,11 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.10.0"
+      version = "~> 3.25.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>2.24.0"
+      version = "~>2.29.0"
     }
   }
 
@@ -22,7 +22,7 @@ terraform {
   }
 
   # version of Terraform to use
-  required_version = ">= 1.2.1"
+  required_version = ">= 1.3.0"
 }
 
 # Configure the Azure Provider
@@ -42,8 +42,6 @@ data "azurerm_subscription" "primary" {}
 
 # get info about the service principal.
 data "azuread_service_principal" "logged_in_app" {
-  # this is used by the Terraform CAF - purpose unclear but somethign to do with running tf from VSCode
-  # count          = var.logged_aad_app_objectId == null ? 0 : 1
   application_id = data.azurerm_client_config.current.client_id
 }
 

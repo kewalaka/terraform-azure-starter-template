@@ -1,5 +1,10 @@
+parameters:
+  - name: workingDirectory
+    type: string
+    default: $(Build.SourcesDirectory)
+
 steps:
   # check terraform code is valid prior to plan
   - pwsh: terraform validate
     displayName: Terraform Validate
-    workingDirectory: $(Build.SourcesDirectory)
+    workingDirectory: ${{ parameters.workingDirectory }}

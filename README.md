@@ -6,7 +6,7 @@ This is an opinionated template that illustrates how to build a devops pipeline 
 
 The pipeline logic is split into stages, jobs and tasks for composability, via simple changes to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) it is easy to add multiple environments and locations (samples included in comments!).
 
-All secrets should be stored in KeyVault (or equivalent), the service principal credentials required to bootstrap Terraform is obtained via the AzureRM Service Connection during the pipeline run.  
+All secrets should be stored in KeyVault (or equivalent), the service principal credentials required to bootstrap Terraform are obtained via the AzureRM Service Connection during the pipeline run.  
 
 This is a sample, there is more that can be done to make it better.  Pull requests are welcome!
 
@@ -29,11 +29,11 @@ TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Proje
 
 ## Do you have a sample?
 
-[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultRBAC)!
+[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultRBAC)!  The sample uses this pipeline template and includes a small amount of Terraform code to deploy a KeyVault using Azure IAM to secure the access policy.
 
 ## Azure service principal setup
 
-Check out [New.ServicePrincipal.ps1](./New-ServicePrincipal.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
+Check out [helpers/New.ServicePrincipal.ps1](./helpers/New-ServicePrincipal.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
 
 ## Local development environment
 
