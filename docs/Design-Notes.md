@@ -6,36 +6,35 @@ In a corporate, it is assumed that another party will pre-create a service princ
 
 ## Secrets management
 
-Secrets are to be sourced from KeyVault **only**.  Terraform code must not contain sensitive variables.
+Terraform code must not contain sensitive variables.
 
-### Secrets for the Terraform remote state (AzureRM backend)
+Excluding the terraform service principal, secrets are to be sourced from KeyVault **only**.  
 
-The pipeline task **terraform_creds_task.yml** uses AzCli to authenticate using the DevOps service connection.
+### Source the terraform service principal from an Azure DevOps (ADO) service connection.
 
-The Azure DevOps service connection could be made by the same person who creates the services principal which would make it unnecessary to share the service principal secret.
+The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_task.yml) uses AzCli to authenticate using the ADO service connection.  This provides the following benefits:
 
-This allows the Terraform state parameters to be sourced and stored for subsequent pipeline tasks without requiring additional infrastructure or configuration.
+* The ADO service connection could be made by the same person who creates the services principal which would make it unnecessary to share the service principal secret.
+* Sourcing the service principal details from the ADO service connection avoids the bootstrap problem for KeyVault.
+* If provided permissions, the pipeline can initialise the remote state (particularly useful in a lab).
 
+### Antipattern - avoid the use of DevOps variable groups.
 
-## Avoid the use of DevOps variable groups.
+Secret variables linked to a KeyVault would be acceptable, but are not used because this requires more effort to bootstrap compared to the approach taken.
 
-Rather than use "secret variables", the preferred pattern is to use an external vault (for Azure, typically KeyVault).
+Variables groups not linked to a KeyVault should be avoided as changes to them can not be audited.
 
-This allows their use & changes to be audited.
+Non-sensitive environment-specific variables are stored in the code for similar reasons (see next section)
 
-Environment specifics are stored in the code for similar reasons (see next section)
+## Environment-specific variables
 
-## Environment specifics
-
-The environments folder uses '.tfvars', each environment uses two files:
+The environments folder uses '.tfvars', each environment uses two files for storing non-sensitive variables:
 * a <env>.terraform.tfvars file
 * a global.terraform.tfvars
 
 The latter is for settings that are generic across all environments but which still should be parameterised.
 
-Note that "auto.tfvars" are not used to avoid accidentally sourcing the wrong environment details.
-
-Within the pipeline, environment settings are quoted specifically, for example:
+Note that "auto.tfvars" are not used to explictly source the correct environment details.  The following example shows how these are referenced in the pipeline:
 
 ```PowerShell
 terraform plan -input=false -out=tfplan `
