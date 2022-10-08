@@ -1,5 +1,5 @@
 parameters:
-  - name: azureSubscriptionName
+  - name: AzureRMServiceConnection
     type: string
 
 steps:
@@ -8,7 +8,7 @@ steps:
   - task: AzureCLI@2
     displayName: Fetch Azure RM credentials
     inputs:
-      azureSubscription: ${{ parameters.azureSubscriptionName }}
+      azureSubscription: ${{ parameters.AzureRMServiceConnection }}
       scriptType: "pscore"
       # 'addSpnToEnvironment' is required so that the service principal details are available
       addSpnToEnvironment: true

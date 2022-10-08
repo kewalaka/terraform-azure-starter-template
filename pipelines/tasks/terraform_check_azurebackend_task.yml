@@ -1,5 +1,5 @@
 parameters:
-  - name: azureSubscriptionName
+  - name: AzureRMServiceConnection
     type: string
   - name: tfstateResourceGroupName
     type: string
@@ -14,7 +14,7 @@ steps:
   - task: AzurePowerShell@5
     displayName: Check for TF Azure backend
     inputs:
-      azureSubscription: ${{ parameters.azureSubscriptionName }}
+      azureSubscription: ${{ parameters.AzureRMServiceConnection }}
       scriptType: "inlineScript"
       azurePowerShellVersion: latestVersion
       pwsh: true

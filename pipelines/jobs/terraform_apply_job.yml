@@ -26,7 +26,7 @@ jobs:
             # fetch credentials from Az CLI into environment vars
             - template: ../tasks/terraform_creds_task.yml
               parameters:
-                azureSubscriptionName: ${{ variables.AzureRMServiceConnection}}
+                AzureRMServiceConnection: ${{ variables.AzureRMServiceConnection}}
 
             # terraform init
             - template: ../tasks/terraform_init_azurebackend_task.yml
