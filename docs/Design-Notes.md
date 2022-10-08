@@ -16,7 +16,7 @@ The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_ta
 
 * The ADO service connection could be made by the same person who creates the services principal which would make it unnecessary to share the service principal secret.
 * Sourcing the service principal details from the ADO service connection avoids the bootstrap problem for KeyVault.
-* If provided permissions, the pipeline can initialise the remote state (particularly useful in a lab).
+* The pipeline can initialise the remote state, the only permission required is Contributor on the target resource group or subscription.
 
 ### Antipattern - avoid the use of DevOps variable groups.
 
