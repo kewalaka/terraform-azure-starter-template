@@ -20,9 +20,9 @@ The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_ta
 
 ### Antipattern - avoid the use of DevOps variable groups.
 
-Secret variables linked to a KeyVault would be acceptable, but are not used because this requires more effort to bootstrap compared to the approach taken.
-
 Variables groups not linked to a KeyVault should be avoided as changes to them can not be audited.
+
+Secret variables linked to a KeyVault would be acceptable, but are not used because this requires more effort to bootstrap compared to the approach taken.
 
 Non-sensitive environment-specific variables are stored in the code for similar reasons (see next section)
 
