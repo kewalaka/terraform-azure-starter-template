@@ -31,7 +31,7 @@ $location = 'AustraliaEast'
 $TerraformNeedsToSetRBAC = $true
 
 $subscription_id = $env:ARM_SUBSCRIPTION_ID
-Import-module Az
+Import-module Az.Storage
 $connection = Connect-AzAccount -Tenant $env:ARM_TENANT_ID -Subscription $subscription_id
 if ($connection) {
     # create resource group
