@@ -44,6 +44,7 @@ if ($connection) {
         New-AzResourceGroup -Name $resource_group_name -location $location
     }
 
+    # create the service principal
     $params = @{
         DisplayName = $servicePrincipalDisplayName
         Scope       = "/subscriptions/$subscription_id/resourceGroups/$resource_group_name"
@@ -51,20 +52,20 @@ if ($connection) {
     }
     $sp = New-AzAdServicePrincipal @params
 
-    if ($TerraformNeedsToSetRBAC) {
-        # add user access administrator if Terraform is going to be setting access permissions
-        New-AzRoleAssignment -ObjectId $sp.Id -Scope $params.Scope -RoleDefinitionName 'User Access Administrator'
-    }
-
-    $env:ARM_CLIENT_ID = $sp.ApplicationId
-    $env:ARM_CLIENT_SECRET = $sp.Secret | ConvertFrom-SecureString -AsPlainText
+    $env:ARM_CLIENT_ID = $sp.ServicePrincipalName
+    $env:ARM_CLIENT_SECRET = $sp.PasswordCredentials.SecretText
     Write-Host "Service principal $servicePrincipalDisplayName created"
     Write-Host @"
 If you're intending to develop locally, add the following to secrets.local.ps1:
 
-`$env:ARM_CLIENT_ID       = `'$($sp.ApplicationId)`'
-`$env:ARM_CLIENT_SECRET   = `'$($sp.Secret | ConvertFrom-SecureString -AsPlainText)`'
+`$env:ARM_CLIENT_ID       = `'$($sp.ServicePrincipalName)`'
+`$env:ARM_CLIENT_SECRET   = `'$($sp.PasswordCredentials.SecretText)`'
 "@
+
+    # if Terraform is going to be setting permissions (IAM), add the User Access Administrator role
+    if ($TerraformNeedsToSetRBAC) {
+        New-AzRoleAssignment -ObjectId $sp.Id -Scope $params.Scope -RoleDefinitionName 'User Access Administrator'
+    }
 }
 else {
     Write-Warning ("A connection to Azure could not be made: {0}" -f $_.Exception)
