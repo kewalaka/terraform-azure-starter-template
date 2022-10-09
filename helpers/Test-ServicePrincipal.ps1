@@ -25,12 +25,12 @@ try {
             }
         }
         catch {
-            Write-Error ("There was an error retrieving resource groups {0}") -f $_.Exception
+            Write-Error ("There was an error retrieving resource groups {0}" -f $_.Exception)
         }
     }
 }
 catch {
-    Write-Error "There was an error connecting to the subscriptionId '{0}' in tenantid '{1}'.  Error: {2}" -f $env:ARM_SUBSCRIPTION_ID,$env:ARM_TENANT_ID,$_.Exception
+    Write-Error ("There was an error connecting to the subscriptionId '{0}' in tenantid '{1}'.  Error: {2}" -f $env:ARM_SUBSCRIPTION_ID,$env:ARM_TENANT_ID,$_.Exception)
 }
 finally {
     # remove the AzureRMContext.json file
