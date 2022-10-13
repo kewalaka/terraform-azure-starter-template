@@ -12,9 +12,7 @@ This is a sample, there is more that can be done to make it better.  Pull reques
 
 ## "I know what I'm doing, show me the money!"
 
-* Clone this repo.
-* Copy the pipelines & environments folder to your project
-* Optionally, copy the contents of the root folder and you've got a basic pre-configured starting point for the root module.
+* Create your new Azure DevOps project, and clone this one into it.
 * In Azure DevOps, create an AzureRM service connection.
 * Specify basic environment parameters in [/pipelines/variables/dev.job.vars.yml](/pipelines/variables/dev.job.vars.yml)
 * In Azure DevOps, register a new pipeline pointing to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) - the entry point for the pipeline.
