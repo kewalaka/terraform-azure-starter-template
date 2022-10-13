@@ -42,6 +42,8 @@ terraform plan -input=false -out=tfplan `
    -var-file="./environments/global.terraform.tfvars"
 ```
 
+This approach is not-dissimiliar to Terraform workspaces (on purpose), and helps to keep the code more [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
+
 ## Everything CLI is PowerShell
 
 Sample documentation often mixes up AZ CLI, Bash and PowerShell.  In most cases everything herein is PowerShell.
