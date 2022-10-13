@@ -8,6 +8,6 @@ parameters:
 steps:
   # Run terraform plan (output to tfplan) & finally terraform apply to deploy the infrastructure changes
   - pwsh: |
-              terraform apply -auto-approve -input=false tfplan
+      terraform apply -auto-approve -input=false tfplan
     displayName: Terraform Apply
     workingDirectory: ${{ parameters.workingDirectory }}

@@ -12,7 +12,7 @@ stages:
             # only allowed to run (following approval) if terraform plan succeeded.
             dependsOn: plan_${{ parameters.serviceName }}_${{ locationCode }}_${{ environmentObject.environmentName }}
             # do not run Terrform Apply if plan fails
-            condition: succeeded() # and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'],'true'))
+            condition: and(succeeded(), eq(variables['terraform_pending_changes'],'true'))
             jobs:
               - template: ../jobs/terraform_apply_job.yml
                 parameters:

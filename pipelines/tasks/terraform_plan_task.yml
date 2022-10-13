@@ -15,14 +15,17 @@ steps:
       switch ($lastExitCode) {
           0 {
               Write-Host 'No changes to infrastructure detected.'
+              Write-Host "##vso[task.setvariable variable=terraform_pending_changes;isOutput=true]$true"              
               exit 0
           }
           1 { 
               Write-Host 'Terraform plan failed.'
+              Write-Host "##vso[task.setvariable variable=terraform_pending_changes;isOutput=true]$true"              
               exit 1 
           }
           2 {
               Write-Host 'Changes to infrastructure are required.'
+              Write-Host "##vso[task.setvariable variable=terraform_pending_changes;isOutput=true]$true"
               exit 0
           }
       }
