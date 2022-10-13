@@ -49,3 +49,7 @@ data "azuread_service_principal" "logged_in_app" {
 data "azurerm_resource_group" "rg_terraform" {
   name = var.resource_group_name
 }
+
+resource "azurerm_resource_provider_registration" "provider_registration_policy_insights" {
+  name = "Microsoft.PolicyInsights"
+}
