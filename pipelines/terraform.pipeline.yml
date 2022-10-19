@@ -5,9 +5,9 @@ trigger:
     - '*'
   paths:
     exclude:
-    - README.md
-      New-ServicePrincipal.ps1
-      /docs/**
+    - /**/*.md
+    - /docs/**
+    - New-ServicePrincipal.ps1
 
 # alternative to turn off triggers
 # trigger:
