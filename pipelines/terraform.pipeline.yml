@@ -7,7 +7,7 @@ trigger:
     exclude:
     - README.md
       New-ServicePrincipal.ps1
-      /docs/*
+      /docs/**
 
 # alternative to turn off triggers
 # trigger:
