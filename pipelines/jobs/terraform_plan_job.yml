@@ -12,6 +12,8 @@ jobs:
     steps:
       # check code is formatted correctly
       - template: ../tasks/terraform_fmt_task.yml
+      # update Terraform version if required
+      - template: ../tasks/apt_installterraform_task.yml      
       # fetch credentials from Az CLI into environment vars          
       - template: ../tasks/terraform_creds_task.yml
         parameters:

@@ -23,6 +23,9 @@ jobs:
             # download the artifacts created by the build
             - template: ../tasks/download_artifacts_task.yml
 
+            # update Terraform version if required
+            - template: ../tasks/apt_installterraform_task.yml     
+            
             # fetch credentials from Az CLI into environment vars
             - template: ../tasks/terraform_creds_task.yml
               parameters:
