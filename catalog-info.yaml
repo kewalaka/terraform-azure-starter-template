@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: Terraform-CICD-Template
+  description: An opinionated way to create a Terraform repository with CI/CD integration ready to go.
+  tags:
+    - terraform
+    - azurepipelines
+spec:
+  type: service
+  lifecycle: production
+  owner: infra-team
