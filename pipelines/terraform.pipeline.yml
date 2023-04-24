@@ -2,12 +2,12 @@ trigger:
   batch: true
   branches:
     include:
-    - '*'
+      - "*"
   paths:
     exclude:
-    - /**/*.md
-    - /docs/**
-    - New-ServicePrincipal.ps1
+      - /**/*.md
+      - /docs/**
+      - New-ServicePrincipal.ps1
 
 # alternative to turn off triggers
 # trigger:
@@ -23,8 +23,6 @@ stages:
       environmentObjects:
         - environmentName: "dev"
           locationCode: ["auea"]
-
-
 # SAMPLE: one dev & a test environment in two locations
 #
 # stages:
@@ -33,8 +31,8 @@ stages:
 #       environmentObjects:
 #         - environmentName: "dev"
 #           locationCode: ["auea"]
-#        - environmentName: "tst"
-#          locationCode: ["auea", "ause"]
+#         - environmentName: "tst"
+#           locationCode: ["auea", "ause"]
 
 # SAMPLE: dev, test & prod with a gate to check that prod code can only be deployed from main
 #
