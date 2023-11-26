@@ -2,9 +2,9 @@
 
 ## Why
 
-A local development environment allows you to test changes before committing them to a repository. 
+A local development environment allows you to test changes before committing them to a repository.
 
-It is still considered good practice to commit often, this provides more visibility to collaborators, 
+It is still considered good practice to commit often, this provides more visibility to collaborators,
 and smaller more frequent changes are typically easier to review and rollback from.
 
 ## How
@@ -42,7 +42,6 @@ terraform validate
 # this will run tf plan from your workstation
 terraform plan -input=false -out=tfplan `
    -var-file="./environments/dev.terraform.tfvars" `
-   -var-file="./environments/global.terraform.tfvars"
 ```
 
 Use of ```terraform apply``` must be via a DevOps pipeline.
@@ -58,9 +57,10 @@ terraform fmt -recursive
 
 When creating pipeline, try to mimic tasks that can be repeated on the local development machine.
 
-As an example, use powershell or bash rather than components from the Visual Studio Marketplace 
+As an example, use powershell or bash rather than components from the Visual Studio Marketplace
 such as 'Terraform'.
 
 This serves two purposes:
-1) it makes it easier to troubleshoot the activities a pipeline is carrying out, and 
-2) it makes it easier test changes locally prior to committing them. 
+
+1) it makes it easier to troubleshoot the activities a pipeline is carrying out, and
+2) it makes it easier test changes locally prior to committing them.

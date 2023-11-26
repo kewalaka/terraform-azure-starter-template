@@ -1,10 +1,11 @@
+# Update the "TODO" references
 variables:
   # this service connection is created in DevOps and used to authenticate to Azure
-  AzureRMServiceConnection: "AzureRM"
+  AzureRMServiceConnection: "azurerm-id-azdo-" # TODO correct name of service connection
   # this is the location of the tfState file (AzureRM backend) in this environment
-  tfstateResourceGroupName: "rg-terraform-playground"
+  tfstateResourceGroupName: "rg-TODO-dev-auea"  # TODO correct name resource group
   tfstateLocation: "AustraliaEast"
-  tfstateStorageAccountName: "sttfstuff023"
-  tfstateStorageContainerName: "terraform"
+  tfstateStorageAccountName: "sttfTODOdevauea"  # TODO correct name storage account
+  tfstateStorageContainerName: "tfstate"
   # these are the environment specific settings that relate to the infrastructure being deployed.
   environmentTFVARS: "./environments/dev.terraform.tfvars"

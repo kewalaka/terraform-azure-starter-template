@@ -18,14 +18,6 @@ jobs:
       - template: ../tasks/terraform_creds_task.yml
         parameters:
           AzureRMServiceConnection: ${{ variables.AzureRMServiceConnection}}
-      # check & create terraform storage container if not already there
-      - template: ../tasks/terraform_check_azurebackend_task.yml      
-        parameters:
-          AzureRMServiceConnection: ${{ variables.AzureRMServiceConnection}}
-          tfstateResourceGroupName: ${{ variables.tfstateResourceGroupName}}
-          tfstateStorageAccountName: ${{ variables.tfstateStorageAccountName}}
-          tfstateStorageContainerName: ${{ variables.tfstateStorageContainerName}}
-          tfstateLocation: ${{ variables.tfstateLocation}}
       # terraform init
       - template: ../tasks/terraform_init_azurebackend_task.yml
         parameters:

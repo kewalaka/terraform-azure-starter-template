@@ -1,4 +1,4 @@
-## Azure service principal setup
+# Azure service principal setup
 
 For a lab environment, 'New-ServicePrincipal.ps1', will create a resource group (RG) for your deployment & the service principal scoped to this RG.
 
@@ -10,7 +10,7 @@ Terraform code must not contain sensitive variables.
 
 Excluding the terraform service principal, secrets are to be sourced from KeyVault **only**.  
 
-### Source the terraform service principal from an Azure DevOps (ADO) service connection.
+### Source the terraform service principal from an Azure DevOps (ADO) service connection
 
 The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_task.yml) uses AzCli to authenticate using the ADO service connection.  This provides the following benefits:
 
@@ -18,7 +18,7 @@ The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_ta
 * Sourcing the service principal details from the ADO service connection avoids the bootstrap problem for KeyVault.
 * The pipeline can initialise the remote state, the only permission required is Contributor on the target resource group or subscription.
 
-### Antipattern - avoid the use of DevOps variable groups.
+### Antipattern - avoid the use of DevOps variable groups
 
 Variables groups not linked to a KeyVault should be avoided as changes to them can not be audited.
 
@@ -28,9 +28,9 @@ Non-sensitive environment-specific variables are stored in the code for similar 
 
 ## Environment-specific variables
 
-The environments folder uses '.tfvars', each environment uses two files for storing non-sensitive variables:
-* a <env>.terraform.tfvars file
-* a global.terraform.tfvars
+The environments folder uses '.tfvars', each environment uses a file for storing non-sensitive variables, e.g.:
+
+* a ```<env>.terraform.tfvars``` file
 
 The latter is for settings that are generic across all environments but which still should be parameterised.
 
@@ -38,8 +38,7 @@ Note that "auto.tfvars" are not used to explictly source the correct environment
 
 ```PowerShell
 terraform plan -input=false -out=tfplan `
-   -var-file="./environments/dev.terraform.tfvars" `
-   -var-file="./environments/global.terraform.tfvars"
+   -var-file="./environments/dev.terraform.tfvars"
 ```
 
 This approach is not-dissimiliar to Terraform workspaces (on purpose), and helps to keep the code more [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)

@@ -6,10 +6,18 @@ steps:
   # Terraform Plan - output changes to be made to the console for review
   # TODO if we output to json is that then comparable?
   - pwsh: |
+      if ($env:ARM_USE_OIDC) {
+        if ($null -eq $env:ARM_OIDC_TOKEN -or "" -eq $env:ARM_OIDC_TOKEN) {
+          Write-Error "Auth token is null or empty, can not continue."
+          exit 1
+        }
+        # ARM_CLIENT_SECRET must not be set if using OIDC.
+        Remove-Item env:ARM_CLIENT_SECRET
+      }
+
       Write-Host 'Running terraform plan'
       terraform plan -input=false -out=$(Build.ArtifactStagingDirectory)/tfplan `
           -var-file='${{ parameters.environmentTFVARS }}' `
-          -var-file='./environments/global.terraform.tfvars' `
           -detailed-exitcode
 
       switch ($lastExitCode) {
@@ -31,6 +39,9 @@ steps:
       }
     displayName: Terraform Plan
     workingDirectory: $(Build.SourcesDirectory)
+    env:
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_OIDC_TOKEN: $(ARM_OIDC_TOKEN)
 
     # copy the terraform code and tfplan
   - task: CopyFiles@2

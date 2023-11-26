@@ -3,11 +3,11 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.25.0"
+      version = "~> 3.82.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>2.29.0"
+      version = "~>2.46.0"
     }
   }
 
@@ -18,7 +18,8 @@ terraform {
     # These can not be set as variables as that is not supported for a backend configuration block:
     # https://www.terraform.io/docs/language/settings/backends/configuration.html#using-a-backend-block
 
-    key = "terraform.tfstate"
+    key              = "terraform.tfstate"
+    use_azuread_auth = true
   }
 
   # version of Terraform to use
@@ -33,7 +34,8 @@ provider "azurerm" {
       purge_soft_delete_on_destroy    = false
     }
   }
-  skip_provider_registration = "true"
+  skip_provider_registration = true
+  storage_use_azuread        = true
 }
 
 # get info about the Azure tenant
@@ -42,10 +44,10 @@ data "azurerm_subscription" "primary" {}
 
 # get info about the service principal.
 data "azuread_service_principal" "logged_in_app" {
-  application_id = data.azurerm_client_config.current.client_id
+  client_id = data.azurerm_client_config.current.client_id
 }
 
 # Get info about the resource group the solution is deployed into
-data "azurerm_resource_group" "rg_terraform" {
-  name = var.resource_group_name
+data "azurerm_resource_group" "parent" {
+  name = local.resource_group_name
 }

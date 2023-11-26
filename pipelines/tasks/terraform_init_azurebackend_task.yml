@@ -11,9 +11,30 @@ parameters:
 
 steps:
   - pwsh: |
+      if ($env:ARM_USE_OIDC) {
+        if ($null -eq $env:ARM_OIDC_TOKEN -or "" -eq $env:ARM_OIDC_TOKEN) {
+          Write-Error "Auth token is null or empty, can not continue."
+          exit 1
+        }
+        # ARM_CLIENT_SECRET must not be set if using OIDC.
+        Remove-Item env:ARM_CLIENT_SECRET
+      }
+      Write-Host "`nTerraform azure provider environment variables:" -NoNewline
+      Get-ChildItem -Path Env: -Recurse -Include ARM_* | ForEach-Object { 
+        if ($_.Name -match 'SECRET|TOKEN') {
+          $_.Value = "<redacted>"
+        } 
+        $_
+      } | Sort-Object -Property Name | Format-Table -HideTableHeader
+
+
+      Write-Host "`nRunning Terraform init:"  
       terraform init -reconfigure `
         -backend-config="container_name=${{ parameters.tfstateStorageContainerName }}" `
         -backend-config="storage_account_name=${{ parameters.tfstateStorageAccountName }}" `
         -backend-config="resource_group_name=${{ parameters.tfstateResourceGroupName }}"
     displayName: Terraform Init
     workingDirectory: ${{ parameters.workingDirectory }}
+    env:
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_OIDC_TOKEN: $(ARM_OIDC_TOKEN)
