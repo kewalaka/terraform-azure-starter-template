@@ -1,6 +1,6 @@
 Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
 
-# Introduction 
+# Introduction
 
 This is an opinionated template that illustrates how to build a devops pipeline for a Terraform project using Azure blob storage for remote state management.
 
@@ -31,7 +31,7 @@ TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Proje
 
 ## Azure service principal setup
 
-Check out [helpers/New.ServicePrincipal.ps1](./helpers/New-ServicePrincipal.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
+Check out [helpers/New.ServicePrincipal.ps1](./helpers/New-TerraformEnvironment.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
 
 ## Local development environment
 
