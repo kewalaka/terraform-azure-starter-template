@@ -1,6 +1,6 @@
-Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
-
 # Introduction
+
+Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
 
 This is an opinionated template that illustrates how to build a devops pipeline for a Terraform project using Azure blob storage for remote state management.
 
@@ -27,7 +27,7 @@ TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Proje
 
 ## Do you have a sample?
 
-[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultRBAC)!  The sample uses this pipeline template and includes a small amount of Terraform code to deploy a KeyVault using Azure IAM to secure the access policy.
+[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultAVM)!  The sample uses this pipeline template and includes a small amount of Terraform code to deploy a KeyVault using an [Azure Verified Module](https://aka.ms/AVM).
 
 ## Azure service principal setup
 

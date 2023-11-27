@@ -1,22 +1,14 @@
-# Azure service principal setup
+# Azure managed identity setup
 
-For a lab environment, 'New-ServicePrincipal.ps1', will create a resource group (RG) for your deployment & the service principal scoped to this RG.
+For a lab environment, 'New-TerraformEnvironment.ps1', will create a resource group, storage account & a managed identity, along with appropriate permissions.
 
-In a corporate, it is assumed that another party will pre-create a service principal and apply permissions to the resource group.
+This uses federated workload identity.
 
 ## Secrets management
 
 Terraform code must not contain sensitive variables.
 
 Excluding the terraform service principal, secrets are to be sourced from KeyVault **only**.  
-
-### Source the terraform service principal from an Azure DevOps (ADO) service connection
-
-The pipeline task [terraform_creds_task.yml](/pipelines/tasks/terraform_creds_task.yml) uses AzCli to authenticate using the ADO service connection.  This provides the following benefits:
-
-* The ADO service connection could be made by the same person who creates the services principal which would make it unnecessary to share the service principal secret.
-* Sourcing the service principal details from the ADO service connection avoids the bootstrap problem for KeyVault.
-* The pipeline can initialise the remote state, the only permission required is Contributor on the target resource group or subscription.
 
 ### Antipattern - avoid the use of DevOps variable groups
 
