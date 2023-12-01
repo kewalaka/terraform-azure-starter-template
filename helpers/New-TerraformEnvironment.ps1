@@ -273,8 +273,8 @@ variables:
   # this is the location of the tfState file (AzureRM backend) in this environment
   tf-state-resource-group: "$storage_account_resource_group_name"
   tf-state-blob-account: "$storage_account_name"
-  # these are the environment specific settings that relate to the infrastructure being deployed.  
-  tf-var-file: "environments/$env_code.terraform.tfvars"
+  # these are the environment specific settings that relate to the infrastructure being deployed.
+  environmentTFVARS: "./environments/dev.terraform.tfvars"
 
 -------------------------------
 Terraform environment variables
