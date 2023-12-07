@@ -108,6 +108,9 @@ if ($connection) {
     $uaid = New-AzUserAssignedIdentity @params
     Write-Host "User assigned managed identity '$managedIdentityName' created"
 
+    # pause for a few seconds whilst the managed id is created, otherwise role assignments can fail
+    Start-Sleep -Seconds 10
+
     $scope = "/subscriptions/$subscription_id/resourceGroups/$resource_group_name"
     New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Contributor' | Out-Null
     Write-Host "Contributor granted to managed identity '$managedIdentityName' at scope '$scope'"
