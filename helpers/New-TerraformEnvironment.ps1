@@ -86,6 +86,7 @@ if ($connection) {
     }
     else {
         Write-Warning "The storage account name '$storage_account_name' is not available. Reason: $($availabilityResult.Message)"
+		return
     }
 
     # create resource group
@@ -257,7 +258,7 @@ Here are the details for the service connection:
 
 Subscription Id:             $($connection.context.subscription.id)
 Subscription Name:           $($connection.context.subscription.name)
-Service Principal Id:        $($uaid.ClientId)
+Managed Identity client Id:  $($uaid.ClientId)
 Tenant Id:                   $($connection.context.tenant.id)
 Suggested Name:              "azurerm-$($uaid.Name.ToLower())"
 Suggested Description:       Azure Resource Manager Service Connection for Terraform to resource group $resource_group_name.
