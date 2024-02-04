@@ -73,7 +73,14 @@ if ($storage_account_name.Length -gt 24) {
 }
 
 $subscription_id = $env:ARM_SUBSCRIPTION_ID
-Import-module Az.Storage
+try {
+    Import-Module Az.Accounts, Az.ManagedServiceIdentity, Az.Resources, Az.Storage
+}
+catch {
+    Write-Warning "There was an issue importing required Az Modules, make sure your Az PowerShell modules are up to date: <https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell>"
+    return
+}
+
 $connection = Connect-AzAccount -Tenant $env:ARM_TENANT_ID -Subscription $subscription_id
 
 if ($connection) {
@@ -85,8 +92,8 @@ if ($connection) {
         Write-Host "The storage account name '$storage_account_name' is available."
     }
     else {
-        Write-Warning "The storage account name '$storage_account_name' is not available. Reason: $($availabilityResult.Message)"
-		return
+        Write-Warning "The storage account name '$storage_account_name' is not available, consider adjusting the supplied app name '$appname'. Reason: $($availabilityResult.Message)"
+        return
     }
 
     # create resource group
@@ -110,7 +117,7 @@ if ($connection) {
     Write-Host "User assigned managed identity '$managedIdentityName' created"
 
     # pause for a few seconds whilst the managed id is created, otherwise role assignments can fail
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 20
 
     $scope = "/subscriptions/$subscription_id/resourceGroups/$resource_group_name"
     New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Contributor' | Out-Null
@@ -118,8 +125,8 @@ if ($connection) {
 
     # if Terraform is going to be setting permissions (IAM), add the User Access Administrator role
     if ($TerraformNeedsToSetRBAC) {
-        New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'User Access Administrator' | Out-Null
-        Write-Host "User Access Administrator granted to managed identity '$managedIdentityName' at scope '$scope'"        
+        New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Role Based Access Control Administrator' | Out-Null
+        Write-Host "Role Based Access Control Administrator granted to managed identity '$managedIdentityName' at scope '$scope'"        
     }
 
     ## TODO pass in DevOps Org issuer token GUID, org name & project name then can set up federated credential.
