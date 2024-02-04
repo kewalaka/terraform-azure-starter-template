@@ -15,7 +15,7 @@ $env:ARM_SUBSCRIPTION_ID = '<subscriptionId>'
 5) Update your secrets file with the client Id & secret
 
 # the account that runs this script needs the following permissions:
-    - Either Owner, or Contributor & User Access Administrator, on the target subscription
+    - Either Owner, or Contributor & Role Based Access Control Administrator, on the target subscription
     - Permission to create service principals in Azure AD (e.g. the Application Administrator role)
 
 #>
@@ -123,7 +123,7 @@ if ($connection) {
     New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Contributor' | Out-Null
     Write-Host "Contributor granted to managed identity '$managedIdentityName' at scope '$scope'"
 
-    # if Terraform is going to be setting permissions (IAM), add the User Access Administrator role
+    # if Terraform is going to be setting permissions (IAM), add the Role Based Access Control Administrator role
     if ($TerraformNeedsToSetRBAC) {
         New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Role Based Access Control Administrator' | Out-Null
         Write-Host "Role Based Access Control Administrator granted to managed identity '$managedIdentityName' at scope '$scope'"        
