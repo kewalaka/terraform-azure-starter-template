@@ -23,13 +23,14 @@ $env:ARM_SUBSCRIPTION_ID = '<subscriptionId>'
 # -------------------------------------------------
 # Start of customisations
 #
-$appname = 'keyvaultavm'
+$appname = 'appsample'
 $env_code = 'dev'
 $location = 'AustraliaEast'
 $short_location_code = 'auea'
 $tags = @{
     Company = "kewalaka"
     Project = "$appname project"
+    Owner   = "kewalaka"
 }
 
 # does the service principal need to be able to set permissions on objects
@@ -53,6 +54,28 @@ $storageSKU = 'Standard_LRS'
 #
 # End of customisations
 # -------------------------------------------------
+
+
+function Grant-RBACAdministratorRole {
+    param(
+        [string]$ObjectId,
+        [string]$Scope,
+        [string]$RoleDefinitionName,
+        [string]$ManagedIdentityName
+    )
+
+    try {
+        $ra = Get-AzRoleAssignment -ObjectId $ObjectId -Scope $Scope -RoleDefinitionName $RoleDefinitionName
+    }
+    catch {}
+    if ($null -eq $ra) {
+        New-AzRoleAssignment -ObjectId $ObjectId -Scope $Scope -RoleDefinitionName $RoleDefinitionName | Out-Null
+        Write-Host "Role '$RoleDefinitionName' granted to managed identity '$ManagedIdentityName' at scope '$Scope'"
+    }
+    else {
+        Write-Host "Role '$RoleDefinitionName' already exists for identity '$ManagedIdentityName' at scope '$Scope'"
+    }
+}
 
 Update-AzConfig -Scope Process -DisplayBreakingChangeWarning $false | Out-Null
 if ($null -eq $env:ARM_TENANT_ID -or $null -eq $env:ARM_SUBSCRIPTION_ID) {
@@ -81,7 +104,7 @@ catch {
     return
 }
 
-$connection = Connect-AzAccount -Tenant $env:ARM_TENANT_ID -Subscription $subscription_id
+$connection = Connect-AzAccount -TenantId $env:ARM_TENANT_ID -Subscription $subscription_id -Scope Process
 
 if ($connection) {
     Set-AzContext -SubscriptionId $env:ARM_SUBSCRIPTION_ID
@@ -92,8 +115,12 @@ if ($connection) {
         Write-Host "The storage account name '$storage_account_name' is available."
     }
     else {
-        Write-Warning "The storage account name '$storage_account_name' is not available, consider adjusting the supplied app name '$appname'. Reason: $($availabilityResult.Message)"
-        return
+        # if the storage account already exists, check it is connected to this project
+        $sa = Get-AzStorageAccount -resourcegroup $storage_account_resource_group_name -name $storage_account_name -ErrorAction SilentlyContinue
+        if ($null -eq $sa) {
+            Write-Warning "The storage account name '$storage_account_name' is not available, consider adjusting the supplied app name '$appname'. Reason: $($availabilityResult.Message)"
+            return
+        }
     }
 
     # create resource group
@@ -105,28 +132,39 @@ if ($connection) {
         Write-Host "Creating resource group: $resource_group_name"
         New-AzResourceGroup -Name $resource_group_name -location $location -tags $Tags
     }
+    else {
+        Write-Host "Using existing resource group: $resource_group_name"
+    }
 
     # create the managed identity
     $params = @{
         Name              = $managedIdentityName
         ResourceGroupName = $resource_group_name
-        Location          = $location
         SubscriptionId    = $subscription_id
     }
-    $uaid = New-AzUserAssignedIdentity @params
-    Write-Host "User assigned managed identity '$managedIdentityName' created"
+    try {
+        $uaid = Get-AzUserAssignedIdentity @params -ErrorAction SilentlyContinue
+    }
+    catch {}
+    if ($null -eq $uaid) {    
+        $params += @{ Location = $location } 
+        Write-Host "Creating user assigned managed identity '$managedIdentityName'"
+        $uaid = New-AzUserAssignedIdentity @params
+    }
+    else {
+        Write-Host "Using existing user assigned managed identity '$managedIdentityName'"
+    }
 
     # pause for a few seconds whilst the managed id is created, otherwise role assignments can fail
     Start-Sleep -Seconds 20
 
     $scope = "/subscriptions/$subscription_id/resourceGroups/$resource_group_name"
-    New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Contributor' | Out-Null
+    Grant-RBACAdministratorRole -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Contributor' -ManagedIdentityName $managedIdentityName
     Write-Host "Contributor granted to managed identity '$managedIdentityName' at scope '$scope'"
 
     # if Terraform is going to be setting permissions (IAM), add the Role Based Access Control Administrator role
     if ($TerraformNeedsToSetRBAC) {
-        New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Role Based Access Control Administrator' | Out-Null
-        Write-Host "Role Based Access Control Administrator granted to managed identity '$managedIdentityName' at scope '$scope'"        
+        Grant-RBACAdministratorRole -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Role Based Access Control Administrator' -ManagedIdentityName $managedIdentityName        
     }
 
     ## TODO pass in DevOps Org issuer token GUID, org name & project name then can set up federated credential.
@@ -185,6 +223,14 @@ if ($connection) {
         }
     }
     else {
+        # temporarily enable access via shared keys (this is reversed further on)
+        $params = @{
+            ResourceGroupName    = $storage_account_resource_group_name
+            Name                 = $storage_account_name
+            AllowSharedKeyAccess = $true
+        }
+        Set-AzStorageAccount @params | Out-Null
+                
         Write-Host "Using existing storage account: $storage_account_name"
     }
 
@@ -221,8 +267,7 @@ if ($connection) {
 
     # apply SP permissions to the container
     $scope = "$($sa.Id)/blobServices/default/containers/$container_name"
-    Write-Host "Add Storage Blob Data Contributor role assignment for $managedIdentityName at scope $scope"
-    New-AzRoleAssignment -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Storage Blob Data Contributor' | Out-Null
+    Grant-RBACAdministratorRole -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Storage Blob Data Contributor' -ManagedIdentityName $managedIdentityName        
 
     # turn off access via shared keys
     $params = @{
@@ -236,7 +281,7 @@ if ($connection) {
     if ($shouldSetStorageFirewall) {
         # The actual permission required is 'Microsoft.Storage/storageAccounts/write', but this is the closest built-in role.
         Write-Host "Grant the service principal Storage Account Contributor role assignment to be able to set the storage account firewall rules. "
-        New-AzRoleAssignment -ObjectId $adsp.Id -Scope $sa.id -RoleDefinitionName 'Storage Account Contributor' | Out-Null
+        Grant-RBACAdministratorRole -ObjectId $adsp.Id -Scope $sa.id -RoleDefinitionName 'Storage Account Contributor' -ManagedIdentityName $managedIdentityName        
         Write-Host "Setting the 'Deny' default action on the storage account firewall '$storage_account_name'."
         Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $storage_account_resource_group_name -Name $storage_account_name -DefaultAction Deny -Bypass None | Out-Null
     } 
@@ -263,12 +308,13 @@ Service Connection
 
 Here are the details for the service connection:
 
-Subscription Id:             $($connection.context.subscription.id)
-Subscription Name:           $($connection.context.subscription.name)
-Managed Identity client Id:  $($uaid.ClientId)
-Tenant Id:                   $($connection.context.tenant.id)
 Suggested Name:              "azurerm-$($uaid.Name.ToLower())"
 Suggested Description:       Azure Resource Manager Service Connection for Terraform to resource group $resource_group_name.
+
+Subscription Id:       $($connection.context.subscription.id)
+Subscription Name:     $($connection.context.subscription.name)
+Service Principal Id:  $($uaid.ClientId)
+Tenant Id:             $($connection.context.tenant.id)
 
 To adhere to least privilege, do not select "Grant access permission to all pipelines" when creating the service connection.
 
@@ -285,7 +331,7 @@ variables:
   tf-state-resource-group: "$storage_account_resource_group_name"
   tf-state-blob-account: "$storage_account_name"
   # these are the environment specific settings that relate to the infrastructure being deployed.
-  environmentTFVARS: "./environments/dev.terraform.tfvars"
+  tf-var-file: "./environments/dev.terraform.tfvars"
 
 -------------------------------
 Terraform environment variables
