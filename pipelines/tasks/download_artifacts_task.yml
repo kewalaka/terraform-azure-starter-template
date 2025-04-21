@@ -1,7 +1,0 @@
-steps:
-  - task: DownloadPipelineArtifact@2
-    displayName: Download terraform plan  
-    inputs:
-      source: 'current' # Options: current, specific
-      artifact: terraform
-      path: '$(Pipeline.Workspace)/artifacts/'
