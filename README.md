@@ -4,34 +4,30 @@ A streamlined Terraform template for quickly provisioning Azure resources with G
 
 ## Getting Started
 
-1. **Clone the Template**  
+1. Select "Use this template" to create a new repository for your code from this template.
 
-   Clone the repository from GitHub:
+1. Clone the resulting repository from GitHub.
 
-    ```bash
-    git clone https://github.com/your-org/your-repo.git
-    cd your-repo
-    ```
-
-2. **Initialize the Environment**  
-
-    Run the helper script to set up the resource group, managed identity, and federated credentials:
+1. Set environment variables for the Tenant ID and Subscription ID you want to use
 
     ```powershell
+    $env:ARM_TENANT_ID = ''
+    $env:ARM_SUBSCRIPTION_ID = ''
+    ```
+
+    Make sure you have at least Contributor & RBAC Administrator over the subscription.
+
+1. Optionally, use the helper scripts to set things up
+
+    ```powershell
+    # This will create a resource group & managed identity for deployment, and configure OIDC (workload federated identity).
     ./helpers/New-TerraformEnvironment.ps1
-    ```
 
-3. **Configure GitHub Environments**  
-
-    After the above step populates your `.env` file, run the GitHub environments script to create and configure deployment environments:
-
-    ```powershell
+    # After the above step populates your `.env` file, run the following to create and configure your GitHub Environments:
     ./helpers/New-GitHubEnvironments.ps1
     ```
 
-4. **Proceed with Terraform Deployments**  
-
-    Add content to the IaC folder.
+1. Proceed with Terraforming!  Add content to the IaC folder.
 
 ## About the helper scripts
 

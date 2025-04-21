@@ -55,9 +55,9 @@ $adoServiceConnectionName = "sc-$managedIdentityName"
 #
 # End of customisations
 # -------------------------------------------------
-
-. Join-Path("$PSScriptRoot", "private", "New-FederatedCredsFromGit.ps1")
-. Join-Path("$PSScriptRoot", "private", "Grant-RBACRole.ps1")
+if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
+. $(Join-Path "$root" "private" "New-FederatedCredsFromGit.ps1")
+. $(Join-Path "$root" "private" "Grant-RBACRole.ps1")
 
 Update-AzConfig -Scope Process -DisplayBreakingChangeWarning $false | Out-Null # cuts down on noise from breaking change warnings
 Update-AzConfig -Scope Process -LoginExperienceV2 Off | Out-Null # stops the new login experience that wants to iterate through all subscriptions

@@ -1,18 +1,3 @@
-# write code that does the following
-
-# gets the current repo origin from git remote -v
-
-# connects and auths to github - using git credential manager if possible
-
-# if is is missing suggest installing it via winget for windows (use current user profile) or from the github release page for non-windows
-# example of latest - https://github.com/cli/cli/releases/tag/v2.70.0
-
-# creates a new environment from PLAN_ENV_NAME in .env
-# creates a new environment from APPLY_ENV_NAME in .env if not the same as PLAN_ENV_NAME
-# add a reviewer check the apply environment (default kewalaka)
-# add a ruleset that requires PRs to the main branch
-
-
 <#
 This script does the following:
 
@@ -24,6 +9,7 @@ This script does the following:
 6. If APPLY_ENV_NAME is different from PLAN_ENV_NAME, creates/updates the APPLY environment and then:
    - Adds a default reviewer (kewalaka) to the APPLY environment.
    - Sets a protection rule that requires PRs to the main branch.
+7. Sets ARM environment secrets (ARM_TENANT_ID, ARM_SUBSCRIPTION_ID, ARM_CLIENT_ID) on both environments.
 #>
 
 function Check-GhCli {
@@ -36,6 +22,38 @@ function Check-GhCli {
   }
 }
 
+function Set-EnvironmentSecrets {
+  param(
+      [Parameter(Mandatory)]
+      [string]$EnvName
+  )
+
+  Write-Host "`nSetting ARM environment secrets on environment '$EnvName'..."
+
+  if (-not $env:ARM_TENANT_ID -or -not $env:ARM_SUBSCRIPTION_ID -or -not $env:ARM_CLIENT_ID) {
+      Write-Warning "One or more ARM environment variables (ARM_TENANT_ID, ARM_SUBSCRIPTION_ID, ARM_CLIENT_ID) are not set in the session. Skipping secret configuration for '$EnvName'."
+      return
+  }
+
+  $secrets = @{
+      "ARM_TENANT_ID"       = $env:ARM_TENANT_ID
+      "ARM_SUBSCRIPTION_ID" = $env:ARM_SUBSCRIPTION_ID
+      "ARM_CLIENT_ID"       = $env:ARM_CLIENT_ID
+  }
+
+  foreach ($key in $secrets.Keys) {
+      $cmd = @("gh", "secret", "set", $key, "--env", $EnvName, "-b", $secrets[$key])
+      try {
+          & $cmd | Out-Null
+          Write-Host "✔ Secret '$key' set for environment '$EnvName'."
+      }
+      catch {
+          Write-Warning "Failed to set secret '$key' for environment '$EnvName': $_"
+      }
+  }
+}
+
+# Step 1: Check for GH CLI dependency
 if (-not (Check-GhCli)) {
   Write-Warning "GH CLI is not installed. On Windows, you can install via:
 winget install --id GitHub.cli --source winget
@@ -45,6 +63,7 @@ https://github.com/cli/cli/releases/latest"
   return
 }
 
+# Step 2: Ensure GH CLI is authenticated
 try {
   & gh auth status | Out-Null
 }
@@ -53,6 +72,7 @@ catch {
   return
 }
 
+# Step 3: Get the remote origin URL and extract owner/repo
 $remoteOutput = git remote -v | Select-String 'origin.*\(fetch\)' | Select-Object -First 1
 if (-not $remoteOutput) {
   Write-Warning "No remote origin found. Make sure your repo is connected to GitHub."
@@ -106,7 +126,6 @@ if (-not $applyEnvName) {
 Write-Host "`nCreating GitHub environment '$planEnvName' in repo $owner/$repo"
 
 # Step 5: Create or update the PLAN environment using GH CLI.
-# GitHub’s API creates/updates an environment via a PUT request.
 $createPlanCmd = @(
   "gh", "api", "-X", "PUT", "/repos/$owner/$repo/environments/$planEnvName"
 )
@@ -118,6 +137,9 @@ catch {
   Write-Warning "Failed to create/update PLAN environment '$planEnvName': $_"
   return
 }
+
+# Set ARM secrets on PLAN environment.
+Set-EnvironmentSecrets -EnvName $planEnvName
 
 # Step 6: If APPLY environment is different, create/update it and add reviewer/protection rule.
 if ($applyEnvName -ne $planEnvName) {
@@ -134,14 +156,10 @@ if ($applyEnvName -ne $planEnvName) {
       return
   }
 
-  # For the APPLY environment, add a reviewer and add a branch protection rule that requires PR to main.
-  # For reviewers and environment protection, we use GitHub API calls.
+  # For the APPLY environment, add a reviewer and a branch protection rule that requires PRs to main.
   $reviewer = "kewalaka"
   Write-Host "`nSetting deployment branch policy on environment '$applyEnvName'..."
 
-  # Define JSON payload for updating deployment branch policy.
-  # This example sets main as the protected branch and includes a reviewer.
-  # Adjust the payload structure as required by your repository's requirements.
   $payload = @{
       protected_branches = @("main")
       reviewers          = @($reviewer)
@@ -159,6 +177,9 @@ if ($applyEnvName -ne $planEnvName) {
       Write-Warning "Failed to update deployment branch policy for environment '$applyEnvName': $_"
       return
   }
+
+  # Set ARM secrets on APPLY environment.
+  Set-EnvironmentSecrets -EnvName $applyEnvName
 }
 else {
   Write-Host "`nPLAN and APPLY environments are the same. Skipping APPLY-specific configuration."
