@@ -1,3 +1,4 @@
+#Requires -Version 7
 <#
 
 1) Under the root folder, create a file called **secrets.ps1**.  
@@ -173,6 +174,8 @@ $envContent = @"
 ARM_TENANT_ID=$($env:ARM_TENANT_ID)
 ARM_SUBSCRIPTION_ID=$($env:ARM_SUBSCRIPTION_ID)
 ARM_CLIENT_ID=$($uaid.ClientId)
+RESOURCE_GROUP_NAME=$resource_group_name
+MANAGED_IDENTITY_NAME=$managedIdentityName
 PLAN_ENV_NAME=$planEnvName
 APPLY_ENV_NAME=$applyEnvName
 "@

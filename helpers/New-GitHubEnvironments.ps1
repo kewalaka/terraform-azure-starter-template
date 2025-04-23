@@ -1,3 +1,4 @@
+#Requires -Version 7
 <#
 .SYNOPSIS
     Sets up GitHub environments for Terraform deployments.
@@ -13,7 +14,7 @@
     Requires GitHub CLI (gh) to be installed and authenticated.
     Environment variables can be provided via .env file or set in the session:
     - PLAN_ENV_NAME: Name of the plan environment
-    - APPLY_ENV_NAME: Name of the apply environment
+    - APPLY_ENV_NAME: Name of the apply environment (optionally, otherwise only PLAN_ENV_NAME is used)
     - ARM_TENANT_ID, ARM_SUBSCRIPTION_ID, ARM_CLIENT_ID: Azure credentials
 #>
 
@@ -29,7 +30,16 @@ if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
 . $(Join-Path "$root" "github" "New-GitHubBranchRuleset.ps1")
 . $(Join-Path "$root" "github" "Set-GitHubEnvironmentPolicy.ps1")
 
-# Initialize GitHub environment
+# Load environment variables from .env file
+if (Test-Path $EnvFilePath) {
+  Get-Content $EnvFilePath | ForEach-Object {
+    if ($_ -match "^(?<key>[^=]+)=(?<value>.*)$") {
+        [System.Environment]::SetEnvironmentVariable($Matches['key'], $Matches['value'], 'Process')
+    }
+  }
+}
+
+# Initialize GitHub environment & check ARM parameters
 try {
     $envFilePath = Join-Path $root ".env"
     $repoInfo = Initialise-GitHubEnvironment -EnvFilePath $envFilePath
@@ -41,21 +51,32 @@ catch {
 
 $owner = $repoInfo.Owner
 $repo = $repoInfo.Repo
-$planEnvName = $repoInfo.PlanEnvName
-$applyEnvName = $repoInfo.ApplyEnvName
+$planEnvName = $env:PLAN_ENV_NAME
+$applyEnvName = $env:APPLY_ENV_NAME -eq $null -or $env:APPLY_ENV_NAME -eq "" ? $planEnvName : $env:APPLY_ENV_NAME
 
 if (-not $planEnvName) {
     Write-Warning "PLAN_ENV_NAME not set in .env or environment variables."
     return
 }
 
+$azureParams = @{
+    ArmTenantId = $env:ARM_TENANT_ID
+    ArmSubscriptionId = $env:ARM_SUBSCRIPTION_ID 
+    ArmClientId = $env:ARM_CLIENT_ID # assume plan and apply use the same client id for now.
+}
+
+if ($azureParams.ArmTenantId -eq $null -or $azureParams.ArmSubscriptionId -eq $null -or $azureParams.ArmClientId -eq $null) {
+    Write-Warning "One or more ARM parameters (ARM_TENANT_ID, ARM_SUBSCRIPTION_ID, ARM_CLIENT_ID) are not set.  Can't continue."
+    return
+}
+
 # Create environments, first plan, then apply
-if (-not (New-GitHubEnvironment -Owner $owner -Repo $repo -EnvironmentName $planEnvName)) {
+if (-not (New-GitHubEnvironment -Owner $owner -Repo $repo -EnvironmentName $planEnvName @azureParams)) {
     return
 }
 
 if ($applyEnvName -ne $planEnvName) {
-    if (New-GitHubEnvironment -Owner $owner -Repo $repo -EnvironmentName $applyEnvName) {
+    if (New-GitHubEnvironment -Owner $owner -Repo $repo -EnvironmentName $applyEnvName @azureParams) { {
 
         Set-GitHubEnvironmentPolicy -Owner $owner -Repo $repo -EnvironmentName $applyEnvName `
             -UserReviewers $defaultReviewerUsers -TeamReviewers $defaultReviewerTeams

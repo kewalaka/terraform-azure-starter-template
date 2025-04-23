@@ -1,18 +1,4 @@
 function Initialise-GitHubEnvironment {
-  [CmdletBinding()]
-  param(
-      [Parameter(Mandatory)]
-      [string]$EnvFilePath
-  )
-
-  # Load environment variables from .env file
-  if (Test-Path $EnvFilePath) {
-      Get-Content $EnvFilePath | ForEach-Object {
-          if ($_ -match "^(?<key>[^=]+)=(?<value>.*)$") {
-              [System.Environment]::SetEnvironmentVariable($Matches['key'], $Matches['value'], 'Process')
-          }
-      }
-  }
 
   # Check for GH CLI dependency
   if (-not (Check-GhCli)) {
@@ -63,8 +49,6 @@ https://github.com/cli/cli/releases/latest"
   return @{
       Owner = $owner
       Repo = $repo
-      PlanEnvName = $env:PLAN_ENV_NAME
-      ApplyEnvName = $env:APPLY_ENV_NAME
   }
 }
 
