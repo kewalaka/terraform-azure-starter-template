@@ -48,16 +48,16 @@ $DeploymentsNeedToSetRBAC = $true
 # these can be tuned if needed but the defaults are fine too.
 $managedIdentityName = ("id-azdo-{0}-{1}" -f $appname, $env_code)
 $resource_group_name = ("rg-{0}-{1}-{2}" -f $appname, $env_code, $short_location_code)
-$planEnvName       = "${env_code}_plan"
-$applyEnvName      = "${env_code}_apply"
+$planEnvName       = "${env_code}_terraform_plan"
+$applyEnvName      = "${env_code}_terraform_apply"
 $adoServiceConnectionName = "sc-$managedIdentityName"
 
 #
 # End of customisations
 # -------------------------------------------------
 if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
-. $(Join-Path "$root" "private" "New-FederatedCredsFromGit.ps1")
-. $(Join-Path "$root" "private" "Grant-RBACRole.ps1")
+. $(Join-Path "$root" "azure" "New-FederatedCredsFromGitRemote.ps1")
+. $(Join-Path "$root" "azure" "Grant-RBACRole.ps1")
 
 Update-AzConfig -Scope Process -DisplayBreakingChangeWarning $false | Out-Null # cuts down on noise from breaking change warnings
 Update-AzConfig -Scope Process -LoginExperienceV2 Off | Out-Null # stops the new login experience that wants to iterate through all subscriptions
@@ -82,7 +82,7 @@ catch {
     return
 }
 
-$connection = Connect-AzAccount -TenantId $env:ARM_TENANT_ID -Subscription $subscription_id -Scope Process
+$connection = Connect-AzAccount -TenantId $env:ARM_TENANT_ID -Subscription $subscription_id -Scope Process -UseDeviceAuthentication
 
 if ($connection) {
     Set-AzContext -SubscriptionId $env:ARM_SUBSCRIPTION_ID
@@ -140,23 +140,25 @@ if ($connection) {
     }
     else 
     {
-        if $adoOrgGUID -ne "" {
+        if ($adoOrgGUID -ne "") {
             $params = @{
                 ManagedIdentityName = $managedIdentityName
-                RemoteOriginLine = $remoteOriginLine
+                ResourceGroupName = $resource_group_name
+                RemoteOriginLine = "$remoteOriginLine"
                 AdoOrgGUID       = $adoOrgGUID
                 AdoServiceConnectionName = $adoServiceConnectionName
             }
-            New-FederatedCredsFromGit @params
+            New-FederatedCredsFromGitRemote @params
         }
         else {
             $params = @{
                 ManagedIdentityName = $managedIdentityName
-                RemoteOriginLine   = $remoteOriginLine
+                ResourceGroupName = $resource_group_name
+                RemoteOriginLine   = "$remoteOriginLine"
             }
-            New-FederatedCredsFromGit @params -GitHubEnvironmentName $planEnvName
-            if $planEnvName -ne $applyEnvName {
-                New-FederatedCredsFromGit @parmas -GitHubEnvironmentName $applyEnvName
+            New-FederatedCredsFromGitRemote @params -GitHubEnvironmentName $planEnvName
+            if ($planEnvName -ne $applyEnvName) {
+                New-FederatedCredsFromGitRemote @params -GitHubEnvironmentName $applyEnvName
             }
         }
     }
@@ -166,13 +168,13 @@ else {
 }
 
 # write the relevant settings to an .env file so that another script can use them to set up ADO/GitHub
-$envFile = "$PSScriptRoot\.env"
+$envFile = "$root\.env"
 $envContent = @"
-TENANT_ID=$($env:ARM_TENANT_ID)
-SUBSCRIPTION_ID=$($env:ARM_SUBSCRIPTION_ID)
-CLIENT_ID=$($uaid.ClientId)
+ARM_TENANT_ID=$($env:ARM_TENANT_ID)
+ARM_SUBSCRIPTION_ID=$($env:ARM_SUBSCRIPTION_ID)
+ARM_CLIENT_ID=$($uaid.ClientId)
 PLAN_ENV_NAME=$planEnvName
 APPLY_ENV_NAME=$applyEnvName
-@"
+"@
 $envContent | Out-File -FilePath $envFile -Encoding utf8 -Force
 Write-Host "✔ Created .env file"
