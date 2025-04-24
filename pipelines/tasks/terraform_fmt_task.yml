@@ -1,9 +1,0 @@
-parameters:
-  - name: workingDirectory
-    type: string
-    default: $(Build.SourcesDirectory)
-    
-steps:
-  - pwsh: terraform fmt -check -recursive
-    displayName: Terraform Format Check
-    workingDirectory: ${{ parameters.workingDirectory }}

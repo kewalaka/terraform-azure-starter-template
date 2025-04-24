@@ -1,0 +1,46 @@
+name: Deploy IaC using Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        description: 'Terraform Action'
+        default: apply
+        type: choice
+        options:
+          - apply
+          - destroy
+          - plan
+      target_environment:
+        description: 'Select target environment'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+      destroyResources:
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+run-name: ${{ github.workflow }} - Terraform ${{ inputs.terraform_action }} (${{ inputs.target_environment }}) by @${{ github.actor }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  call-terraform-deploy:
+    name: "Run terraform ${{ inputs.terraform_action }} for ${{ inputs.target_environment }}"
+    uses: kewalaka/github-azure-iac-templates/.github/workflows/terraform-deploy-template.yml@main
+    with:
+      terraform_action: ${{ inputs.terraform_action }}
+      plan_target_environment: "${{ inputs.target_environment }}_terraform_plan"
+      apply_target_environment: "${{ inputs.target_environment }}_terraform_apply"
+      terraform_root_path: "./iac"
+      tfvars_file: "./environments/${{ inputs.target_environment }}/${{ inputs.target_environment }}.terraform.tfvars"
+      destroyResources: ${{ inputs.destroyResources == true || inputs.terraform_action == 'destroy' }}
+      bypassChecks: false

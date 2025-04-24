@@ -1,46 +1,39 @@
-# Introduction
+# Base Terraform Solution Template
 
-Terraform (Dev) Plan: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Plan%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main). Apply: [![Build Status](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_apis/build/status/Terraform-CICD-YAMLTemplates?branchName=main&stageName=Terraform%20Apply%20(auea%20-%20dev))](https://dev.azure.com/kewalaka/Terraform-CICD-YAMLTemplates/_build/latest?definitionId=5&branchName=main)
+A streamlined Terraform template for quickly provisioning Azure resources with GitHub-integrated deployments.
 
-This is an opinionated template that illustrates how to build a devops pipeline for a Terraform project using Azure blob storage for remote state management.
+## Getting Started
 
-The pipeline logic is split into stages, jobs and tasks for composability, via simple changes to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) it is easy to add multiple environments and locations (samples included in comments!).
+1. Select "Use this template" to create a new repository for your code from this template.
 
-All secrets should be stored in KeyVault (or equivalent), the service principal credentials required to bootstrap Terraform are obtained via the AzureRM Service Connection during the pipeline run.  
+1. Clone the resulting repository from GitHub.
 
-This is a sample, there is more that can be done to make it better.  Pull requests are welcome!
+1. Set environment variables for the Tenant ID and Subscription ID you want to use
 
-## "I know what I'm doing, show me the money!"
+    ```powershell
+    $env:ARM_TENANT_ID = ''
+    $env:ARM_SUBSCRIPTION_ID = ''
+    ```
 
-* Create your new Azure DevOps project, and clone this one into it.
-* In Azure DevOps, create an AzureRM service connection.
-* Specify basic environment parameters in [/pipelines/variables/dev.job.vars.yml](/pipelines/variables/dev.job.vars.yml)
-* In Azure DevOps, register a new pipeline pointing to [/pipelines/terraform.pipeline.yml](/pipelines/terraform.pipeline.yml) - the entry point for the pipeline.
+    Make sure you have at least Contributor & RBAC Administrator over the subscription.
 
-Start adding Terraform code!
+1. Optionally, use the helper scripts to set things up
 
-## Yowser!  Go slower
+    ```powershell
+    # This will create a resource group & managed identity for deployment, and configure OIDC (workload federated identity).
+    ./helpers/New-TerraformEnvironment.ps1
 
-To go right back to the beginning, check out [Getting started](/docs/Getting-started.md)
+    # After the above step populates your `.env` file, run the following to create and configure your GitHub Environments:
+    ./helpers/New-GitHubEnvironments.ps1
+    ```
 
-TODO - make [add to an existing project](docs/Add-Pipelines-To-An-Existing-Project.md) better...
+1. Proceed with Terraforming!  Add content to the IaC folder.
 
-## Do you have a sample?
+## About the helper scripts
 
-[Sure do](https://dev.azure.com/kewalaka/tfSample-KeyVaultAVM)!  The sample uses this pipeline template and includes a small amount of Terraform code to deploy a KeyVault using an [Azure Verified Module](https://aka.ms/AVM).
+There are two optional script [/helpers/New-AzureEnvironment.ps1](/helpers/New-AzureEnvironment.ps1) provides a simple way to bootstrap initial resources.
 
-## Azure service principal setup
+Given appropriate access (see the script header) it will make:
 
-Check out [helpers/New.ServicePrincipal.ps1](./helpers/New-TerraformEnvironment.ps1), this code will create a resource group (RG) for your deployment & the service principal scoped to this RG.
-
-## Local development environment
-
-See these [instructions](/docs/Setup-a-local-dev-environment.md) for how to set up a local development environment.
-
-## Updating Terraform versions
-
-The included [main.tf](main.tf) includes logic to pin to a specific version of Terraform and providers in use (AzureRM & AzureAD).
-
-## Why did you do it like *that*?
-
-There are a few [Design Notes](/docs/Design-Notes.md) in the Wiki with some background, it is WIP.
+- A resource group and managed identity for deployment
+- A managed identity for deployment with appropriate permissions to the above, and federated credentials
