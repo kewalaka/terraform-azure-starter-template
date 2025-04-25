@@ -21,7 +21,7 @@ A streamlined Terraform template for quickly provisioning Azure resources with G
 
     ```powershell
     # This will create a resource group & managed identity for deployment, and configure OIDC (workload federated identity).
-    ./helpers/New-TerraformEnvironment.ps1
+    ./helpers/New-AzureEnvironment.ps1
 
     # After the above step populates your `.env` file, run the following to create and configure your GitHub Environments:
     ./helpers/New-GitHubEnvironments.ps1
@@ -37,3 +37,6 @@ Given appropriate access (see the script header) it will make:
 
 - A resource group and managed identity for deployment
 - A managed identity for deployment with appropriate permissions to the above, and federated credentials
+
+The second helper [/helpers/New-GitHubEnvironments.ps1](/helpers/New-GitHubEnvironments.ps1) will create GitHub Environments for you,
+set up the required secrets, enable reviewers on the apply environment, and add a ruleset to protect the main branch.

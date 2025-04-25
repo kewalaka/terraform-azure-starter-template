@@ -25,15 +25,20 @@ $env:ARM_SUBSCRIPTION_ID = '<subscriptionId>'
 # Start of customisations
 #
 $appname = '<TODO YOUR APP NAME>' # used for RG and UMI names
-$owner = '<TODO YOUR NAME>'
+$owner = $(git config --get user.email) 
+
 $env_code = 'dev'
-
-
 $location = 'NewZealandNorth' # 'AustraliaEast'
 $short_location_code = 'nzn' # 'auea'
 
-# If you want to use ADO, you need to specify the ADO org GUID
-# The other settings for GitHub and ADO are inferred from the git remote URL
+# if you want more control over naming conventions
+$managedIdentityName = ("id-azdo-{0}-{1}" -f $appname, $env_code)
+$resource_group_name = ("rg-{0}-{1}-{2}" -f $appname, $env_code, $short_location_code)
+$planEnvName       = "${env_code}_terraform_plan"
+$applyEnvName      = "${env_code}_terraform_apply"
+$adoServiceConnectionName = "sc-$managedIdentityName"
+
+# If you want to use ADO, you need to specify the ADO org GUID, if this is unset, GitHub is assumed.
 $adoOrgGUID        = ''
 
 # baseline tags
@@ -43,19 +48,21 @@ $tags = @{
     Owner   = $owner
 }
 
-# does the deployment UMI need to be able to set permissions on objects
+# if this is set, then RBAC Admin is granted.
 $DeploymentsNeedToSetRBAC = $true
-
-# these can be tuned if needed but the defaults are fine too.
-$managedIdentityName = ("id-azdo-{0}-{1}" -f $appname, $env_code)
-$resource_group_name = ("rg-{0}-{1}-{2}" -f $appname, $env_code, $short_location_code)
-$planEnvName       = "${env_code}_terraform_plan"
-$applyEnvName      = "${env_code}_terraform_apply"
-$adoServiceConnectionName = "sc-$managedIdentityName"
 
 #
 # End of customisations
 # -------------------------------------------------
+if ($appname -eq '<TODO YOUR APP NAME>') {
+    Write-Host "`n== Azure Environment Setup ==`n"
+    Write-Host "A short appname is needed for the resource group and managed identity names"
+    Write-Host "For more control over naming conventions, please set the variables at the top of 'helpers/New-AzureEnvironment.ps1'`n"
+    $reply = Read-Host -Prompt "Please supply a short name for the app, or Ctrl-C to quit"
+    $managedIdentityName = ("id-azdo-{0}-{1}" -f $reply, $env_code)
+    $resource_group_name = ("rg-{0}-{1}-{2}" -f $reply, $env_code, $short_location_code)
+}
+
 if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
 . $(Join-Path "$root" "azure" "New-FederatedCredsFromGitRemote.ps1")
 . $(Join-Path "$root" "azure" "Grant-RBACRole.ps1")
@@ -73,6 +80,21 @@ e.g.:
 "@
     return
 }
+
+Write-Host "`n== Confirmation ==`n`nOK, this process will:`n"
+Write-Host "  - Create a resource group (RG) called $resource_group_name"
+Write-Host "  - Create a user assigned managed identity (UMI) called $managedIdentityName"
+Write-Host "  - Grant 'Contributor' to the UMI on the RG"
+if ($DeploymentsNeedToSetRBAC) {
+    Write-Host "  - Grant 'Role Based Access Control Administrator' to the UMI on the RG"
+}
+if ($adoOrgGUID -ne "") {
+    Write-Host "  - Create a federated credential for Azure DevOps using service connection '$adoServiceConnectionName'"
+}
+else {
+    Write-Host "  - Create federated credentials on the UMI for GitHub Environments named: '$planEnvName' and '$applyEnvName'"
+}
+Read-Host -Prompt "`nPress Enter to continue or Ctrl-C to cancel"
 
 $subscription_id = $env:ARM_SUBSCRIPTION_ID
 try {
@@ -163,21 +185,22 @@ if ($connection) {
             }
         }
     }
+
+    # write the relevant settings to an .env file so that another script can use them to set up ADO/GitHub
+    $envFile = "$root\.env"
+    $envContent = @"
+    ARM_TENANT_ID=$($env:ARM_TENANT_ID)
+    ARM_SUBSCRIPTION_ID=$($env:ARM_SUBSCRIPTION_ID)
+    ARM_CLIENT_ID=$($uaid.ClientId)
+    RESOURCE_GROUP_NAME=$resource_group_name
+    MANAGED_IDENTITY_NAME=$managedIdentityName
+    PLAN_ENV_NAME=$planEnvName
+    APPLY_ENV_NAME=$applyEnvName
+"@
+    $envContent | Out-File -FilePath $envFile -Encoding utf8 -Force
+    Write-Host "✔ Created .env file"
 }
 else {
     Write-Warning ("A connection to Azure could not be made: {0}" -f $_.Exception)
 }
 
-# write the relevant settings to an .env file so that another script can use them to set up ADO/GitHub
-$envFile = "$root\.env"
-$envContent = @"
-ARM_TENANT_ID=$($env:ARM_TENANT_ID)
-ARM_SUBSCRIPTION_ID=$($env:ARM_SUBSCRIPTION_ID)
-ARM_CLIENT_ID=$($uaid.ClientId)
-RESOURCE_GROUP_NAME=$resource_group_name
-MANAGED_IDENTITY_NAME=$managedIdentityName
-PLAN_ENV_NAME=$planEnvName
-APPLY_ENV_NAME=$applyEnvName
-"@
-$envContent | Out-File -FilePath $envFile -Encoding utf8 -Force
-Write-Host "✔ Created .env file"
