@@ -1,4 +1,4 @@
-function Grant-RBACAdministratorRole {
+function Grant-RBACRole {
   param(
       [string]$ObjectId,
       [string]$Scope,

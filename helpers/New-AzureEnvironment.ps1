@@ -44,7 +44,6 @@ $adoOrgGUID        = ''
 # baseline tags
 $tags = @{
     Company = "kewalaka"
-    Project = "$appname project"
     Owner   = $owner
 }
 
@@ -66,6 +65,7 @@ if ($appname -eq '<TODO YOUR APP NAME>') {
 if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
 . $(Join-Path "$root" "azure" "New-FederatedCredsFromGitRemote.ps1")
 . $(Join-Path "$root" "azure" "Grant-RBACRole.ps1")
+. $(Join-Path "$root" "common" "Get-GitRepositoryInfo.ps1")
 
 Update-AzConfig -Scope Process -DisplayBreakingChangeWarning $false | Out-Null # cuts down on noise from breaking change warnings
 Update-AzConfig -Scope Process -LoginExperienceV2 Off | Out-Null # stops the new login experience that wants to iterate through all subscriptions
@@ -156,10 +156,9 @@ if ($connection) {
         Grant-RBACRole -ObjectId $uaid.PrincipalId -Scope $scope -RoleDefinitionName 'Role Based Access Control Administrator' -ManagedIdentityName $managedIdentityName        
     }
 
-    # get details from `git remote -v` and use this to make the federated credentials
-    $remoteOriginLine = git remote -v | Select-String 'origin' | Select-Object -First 1
-    if ($null -eq $remoteOriginLine) {
-        Write-Warning "No remote origin found, if you want to use Federated Credentials, please check your `git remote -v` returns a line with 'origin'"
+    $repoInfo = Get-GitRepositoryInfo
+    if ($null -eq $repoInfo) {
+        Write-Warning "No repository information found. Unable to configure federated credentials."
     }
     else 
     {
@@ -167,8 +166,8 @@ if ($connection) {
             $params = @{
                 ManagedIdentityName = $managedIdentityName
                 ResourceGroupName = $resource_group_name
-                RemoteOriginLine = "$remoteOriginLine"
-                AdoOrgGUID       = $adoOrgGUID
+                RemoteOriginLine = $repoInfo.RemoteOriginLine
+                AdoOrgGUID = $adoOrgGUID
                 AdoServiceConnectionName = $adoServiceConnectionName
             }
             New-FederatedCredsFromGitRemote @params
@@ -177,7 +176,7 @@ if ($connection) {
             $params = @{
                 ManagedIdentityName = $managedIdentityName
                 ResourceGroupName = $resource_group_name
-                RemoteOriginLine   = "$remoteOriginLine"
+                RemoteOriginLine = $repoInfo.RemoteOriginLine
             }
             New-FederatedCredsFromGitRemote @params -GitHubEnvironmentName $planEnvName
             if ($planEnvName -ne $applyEnvName) {

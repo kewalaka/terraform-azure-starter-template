@@ -29,6 +29,7 @@ if ($PSScriptRoot -eq "") { $root = "." } else { $root = $PSScriptRoot }
 . $(Join-Path "$root" "github" "New-GitHubEnvironment.ps1")
 . $(Join-Path "$root" "github" "New-GitHubBranchRuleset.ps1")
 . $(Join-Path "$root" "github" "Set-GitHubEnvironmentPolicy.ps1")
+. $(Join-Path "$root" "common" "Get-GitRepositoryInfo.ps1")
 
 # Load environment variables from .env file
 if (Test-Path $EnvFilePath) {
