@@ -18,7 +18,8 @@ on:
         default: dev
         options:
           - dev
-      destroyResources:
+      destroy_resources:
+        description: 'Actually destroy resources?'
         type: boolean
         default: false
 
@@ -31,16 +32,19 @@ run-name: ${{ github.workflow }} - Terraform ${{ inputs.terraform_action }} (${{
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
+  security-events: write
 
 jobs:
   call-terraform-deploy:
     name: "Run terraform ${{ inputs.terraform_action }} for ${{ inputs.target_environment }}"
-    uses: kewalaka/github-azure-iac-templates/.github/workflows/terraform-deploy-template.yml@main
+    uses: kewalaka/github-azure-iac-templates/.github/workflows/terraform-deploy-template.yml@feat/terraform-updates
     with:
       terraform_action: ${{ inputs.terraform_action }}
-      plan_target_environment: "${{ inputs.target_environment }}_terraform_plan"
-      apply_target_environment: "${{ inputs.target_environment }}_terraform_apply"
-      terraform_root_path: "./iac"
-      tfvars_file: "./environments/${{ inputs.target_environment }}/${{ inputs.target_environment }}.terraform.tfvars"
-      destroyResources: ${{ inputs.destroyResources == true || inputs.terraform_action == 'destroy' }}
-      bypassChecks: false
+      environment_name_plan: "${{ inputs.target_environment }}-iac-plan"
+      environment_name_apply: "${{ inputs.target_environment }}-iac-apply"
+      root_module_folder_relative_path: "./iac"
+      tfvars_file: "./environments/${{ inputs.target_environment }}.terraform.tfvars"
+      destroy_resources: ${{ inputs.destroy_resources == true || inputs.terraform_action == 'destroy' }}
+      bypass_static_analysis_checks: true
+    secrets: inherit

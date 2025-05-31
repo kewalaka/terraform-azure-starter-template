@@ -1,1 +1,2 @@
-secrets.ps1
+secrets.*
+.env

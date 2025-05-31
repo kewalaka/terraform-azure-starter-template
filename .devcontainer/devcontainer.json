@@ -17,7 +17,10 @@
         "EditorConfig.EditorConfig",
         "hashicorp.terraform",
         "davidanson.vscode-markdownlint"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "pwsh"
+      }
     }
   }
 }
