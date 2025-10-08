@@ -18,6 +18,9 @@ on:
         default: dev
         options:
           - dev
+          - test
+          - uat
+          - prod
       destroy_resources:
         description: 'Actually destroy resources?'
         type: boolean
