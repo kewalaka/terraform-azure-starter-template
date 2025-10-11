@@ -1,0 +1,33 @@
+---
+name: Terraform CI - Tst
+
+on:
+  pull_request:
+    paths:
+      - 'iac/environments/tst.terraform.tfvars'
+      - 'iac/**/*.tf'
+      - 'iac/**/*.hcl'
+      - '.github/workflows/terraform-ci-tst.yml'
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  terraform-plan-tst:
+    name: "Terraform Plan (tst)"
+    uses: >-
+      kewalaka/github-azure-iac-templates/.github/workflows/terraform-plan.yml@main
+    with:
+      environment_name: "tst-iac-plan"
+      tfvars_file: "./environments/tst.terraform.tfvars"
+      # runner_name: "my-ubuntu-runner"
+      # for more options check
+      # https://github.com/kewalaka/github-azure-iac-templates/blob/main/.github/workflows/terraform-plan.yml
+    secrets: inherit

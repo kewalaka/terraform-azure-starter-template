@@ -1,0 +1,33 @@
+---
+name: Terraform CI - Dev
+
+on:
+  pull_request:
+    paths:
+      - 'iac/environments/dev.terraform.tfvars'
+      - 'iac/**/*.tf'
+      - 'iac/**/*.hcl'
+      - '.github/workflows/terraform-ci-dev.yml'
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  terraform-plan-dev:
+    name: "Terraform Plan (dev)"
+    uses: >-
+      kewalaka/github-azure-iac-templates/.github/workflows/terraform-plan.yml@main
+    with:
+      environment_name: "dev-iac-plan"
+      tfvars_file: "./environments/dev.terraform.tfvars"
+      # runner_name: "my-ubuntu-runner"
+      # for more options check
+      # https://github.com/kewalaka/github-azure-iac-templates/blob/main/.github/workflows/terraform-plan.yml
+    secrets: inherit

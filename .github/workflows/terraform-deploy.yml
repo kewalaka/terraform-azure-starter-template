@@ -18,6 +18,7 @@ on:
         default: dev
         options:
           - dev
+          - tst
           - test
           - uat
           - prod

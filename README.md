@@ -18,30 +18,39 @@ You should then be able to run the `Deploy Iac using Terraform` action on GitHub
 
 ## CI/CD Workflows
 
-This template includes two GitHub Actions workflows:
+This template uses a simple per-environment CI workflow pattern:
 
 ### Terraform CI (Pull Requests)
 
-The `terraform-ci.yml` workflow automatically runs on pull requests when IaC files change. It intelligently determines which environments to test:
+Each environment has its own dedicated CI workflow (e.g., `terraform-ci-dev.yml`, `terraform-ci-tst.yml`) that automatically runs terraform plan when:
+- The environment's specific tfvars file changes (e.g., `iac/environments/dev.terraform.tfvars`)
+- Any IaC files change (e.g., `iac/**/*.tf`, `iac/**/*.hcl`)
 
-- **IaC changes** (e.g., `iac/*.tf`, `iac/*.hcl`): Runs terraform plan for **all environments** (dev, test, uat, prod)
-- **Environment-specific changes** (e.g., `iac/environments/dev.terraform.tfvars`): Runs terraform plan for **only the affected environment(s)**
-- **Mixed changes**: If both IaC and tfvars files change, runs terraform plan for all environments
+**Example environments:**
+- `terraform-ci-dev.yml` - Runs plan for dev environment
+- `terraform-ci-tst.yml` - Runs plan for tst (test) environment
 
-This approach ensures thorough testing while minimizing unnecessary plan runs.
+This pattern is ideal for vending processes where new environments can be added by simply:
+1. Creating a new tfvars file (e.g., `iac/environments/stg.terraform.tfvars`)
+2. Creating a corresponding CI workflow file (e.g., `.github/workflows/terraform-ci-stg.yml`)
+
+The vending process can manage both files as a single unit, eliminating the need for complex matrix builds or dynamic environment detection.
 
 ### Terraform Deploy (Manual)
 
 The `terraform-deploy.yml` workflow is manually triggered and allows you to:
-- Choose the target environment (dev, test, uat, or prod)
+- Choose the target environment (dev, tst, test, uat, or prod)
 - Select the Terraform action (plan, apply, or destroy)
 - Optionally destroy resources with confirmation
 
 ## Environments
 
-This template supports four environments, each with its own tfvars file in `iac/environments/`:
+This template demonstrates the pattern with two environments:
 - `dev.terraform.tfvars` - Development environment
-- `test.terraform.tfvars` - Testing environment
+- `tst.terraform.tfvars` - Test environment
+
+Additional environment files are included as examples:
+- `test.terraform.tfvars` - Alternative test environment naming
 - `uat.terraform.tfvars` - User Acceptance Testing environment
 - `prod.terraform.tfvars` - Production environment
 

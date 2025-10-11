@@ -9,10 +9,10 @@ variable "env_code" {
   type        = string
   validation {
     condition = contains(
-      ["dev", "test", "uat", "prod"],
+      ["dev", "tst", "test", "uat", "prod"],
       var.env_code
     )
-    error_message = "Err: environment should be one of dev, test or prod."
+    error_message = "Err: environment should be one of dev, tst, test, uat or prod."
   }
   validation {
     condition     = length(var.env_code) <= 4
