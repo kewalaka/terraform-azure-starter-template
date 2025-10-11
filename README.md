@@ -18,23 +18,34 @@ You should then be able to run the `Deploy Iac using Terraform` action on GitHub
 
 ## CI/CD Workflows
 
-This template uses a simple per-environment CI workflow pattern:
+This template uses a two-stage CI workflow pattern that separates fast validation from expensive terraform plans:
 
-### Terraform CI (Pull Requests)
+### Stage 1: Terraform Validation (Automatic & Fast)
 
-Each environment has its own dedicated CI workflow (e.g., `terraform-ci-dev.yml`, `terraform-ci-tst.yml`) that automatically runs terraform plan when:
-- The environment's specific tfvars file changes (e.g., `iac/environments/dev.terraform.tfvars`)
-- Any IaC files change (e.g., `iac/**/*.tf`, `iac/**/*.hcl`)
+The `terraform-ci-validation.yml` workflow runs automatically on all PRs that touch IaC files. It performs:
+- **Terraform format checking** (`terraform fmt -check`)
+- **Terraform validation** (`terraform validate`)
+- **TFLint checks** for best practices and potential issues
 
-**Example environments:**
-- `terraform-ci-dev.yml` - Runs plan for dev environment
-- `terraform-ci-tst.yml` - Runs plan for tst (test) environment
+This stage is fast (typically <1 minute) and requires no cloud access or authentication. Results are posted as a PR comment for quick review.
 
-This pattern is ideal for vending processes where new environments can be added by simply:
-1. Creating a new tfvars file (e.g., `iac/environments/stg.terraform.tfvars`)
-2. Creating a corresponding CI workflow file (e.g., `.github/workflows/terraform-ci-stg.yml`)
+### Stage 2: Terraform Plan (Manual or Label-Triggered)
 
-The vending process can manage both files as a single unit, eliminating the need for complex matrix builds or dynamic environment detection.
+After validation passes and human/Copilot review, environment-specific terraform plans can be triggered:
+
+**Per-environment workflows:**
+- `terraform-ci-dev.yml` - Runs terraform plan for dev environment
+- `terraform-ci-tst.yml` - Runs terraform plan for tst environment
+
+**How to trigger:**
+1. **Manual trigger**: Use the "Run workflow" button in GitHub Actions
+2. **Label trigger**: Add label `run-plan-dev` or `run-plan-tst` to the PR
+
+This two-stage approach ensures:
+- ✅ Fast feedback on code quality and syntax
+- ✅ Time for review before expensive cloud operations
+- ✅ Explicit approval/trigger required for terraform plans
+- ✅ No wasted cloud resources on invalid terraform code
 
 ### Terraform Deploy (Manual)
 
@@ -53,6 +64,14 @@ Additional environment files are included as examples:
 - `test.terraform.tfvars` - Alternative test environment naming
 - `uat.terraform.tfvars` - User Acceptance Testing environment
 - `prod.terraform.tfvars` - Production environment
+
+### Adding New Environments
+
+For vending processes, new environments can be added by creating:
+1. A new tfvars file (e.g., `iac/environments/stg.terraform.tfvars`)
+2. A corresponding CI workflow file (e.g., `.github/workflows/terraform-ci-stg.yml`)
+
+Both files can be managed as a single unit, with no need for complex matrix builds or dynamic environment detection.
 
 ### Alternatives to using runners
 
