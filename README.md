@@ -51,7 +51,7 @@ iac/
 - Fast static checks without auth
 - OIDC authentication (no stored credentials)
 - Parallel environment plans
-- Single approval gate
+- Per-environment approvals
 - Azure Developer CLI compatible
 
 ## Documentation
