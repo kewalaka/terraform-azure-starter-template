@@ -1,6 +1,11 @@
 name: Deploy IaC using Terraform
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'iac/**'
+      - '.github/workflows/terraform-deploy.yml'
   workflow_dispatch:
     inputs:
       terraform_action:
@@ -18,6 +23,9 @@ on:
         default: dev
         options:
           - dev
+          - tst
+          - uat
+          - prod
       destroy_resources:
         description: 'Actually destroy resources?'
         type: boolean
@@ -27,7 +35,7 @@ defaults:
   run:
     shell: bash
 
-run-name: ${{ github.workflow }} - Terraform ${{ inputs.terraform_action }} (${{ inputs.target_environment }}) by @${{ github.actor }}
+run-name: ${{ github.workflow }} - Terraform ${{ inputs.terraform_action || 'apply' }} (${{ inputs.target_environment || 'dev' }}) by @${{ github.actor }}
 
 permissions:
   id-token: write
@@ -37,13 +45,14 @@ permissions:
 
 jobs:
   call-terraform-deploy:
-    name: "Run terraform ${{ inputs.terraform_action }} for ${{ inputs.target_environment }}"
+    name: "Run terraform ${{ inputs.terraform_action || 'apply' }} for ${{ inputs.target_environment || 'dev' }}"
     uses: kewalaka/github-azure-iac-templates/.github/workflows/terraform-deploy-template.yml@main
     with:
-      terraform_action: ${{ inputs.terraform_action }}
-      environment_name_plan: "${{ inputs.target_environment }}-iac-plan"
-      environment_name_apply: "${{ inputs.target_environment }}-iac-apply"
-      tfvars_file: "./environments/${{ inputs.target_environment }}.terraform.tfvars"
+      terraform_action: ${{ inputs.terraform_action || 'apply' }}
+      environment_name_plan: "${{ inputs.target_environment || 'dev' }}-iac-plan"
+      environment_name_apply: "${{ inputs.target_environment || 'dev' }}-iac-apply"
+      root_iac_folder_relative_path: "./iac"
+      tfvars_file: "./environments/${{ inputs.target_environment || 'dev' }}.terraform.tfvars"
       destroy_resources: ${{ inputs.destroy_resources == true || inputs.terraform_action == 'destroy' }}
       # runner_name: "my-ubuntu-runner"
       # for more options check https://github.com/kewalaka/github-azure-iac-templates/blob/main/.github/workflows/terraform-deploy-template.yml

@@ -1,24 +1,67 @@
-# Base Terraform Solution Template
+# Terraform Azure Starter Template
 
-A streamlined Terraform template for quickly provisioning Azure resources with GitHub-integrated deployments.
+Template for Azure infrastructure using Terraform with using central CI/CD workflows.
 
-## Getting Started
+Uses shared GitHub Actions workflow here: <https://github.com/kewalaka/github-azure-iac-templates>
 
-This is designed to be used with [Az-Bootstrap](https://github.com/kewalaka/az-bootstrap)
+## Quick Start
 
-Az-Bootstrap will create the deployment resource group, storage account for state, plan & apply identities.
+1. **Use this template** to create your repository
+1. **Set up GitHub environments and Azure OIDC** ([guide](docs/setup.md))
+1. **Create a PR** - validation runs automatically
+1. **Approve** - dev deployment runs on main
 
-To make the sample code work
+## How It Works
 
-1) Update the `app_name` in locals.tf to match the name of the repository.
+```mermaid
+graph TD
+    A[PR Created] --> B[Static Validation]
+    B -->|Fast ~2 min| C{Pass?}
+    C -->|Yes| D[Environment Plans]
+    C -->|No| E[Fix Issues]
+    D -->|Requires Approval| F[Post Results]
+    
+    style B fill:#e1f5ff
+    style D fill:#fff4e1
+```
 
-1) Add the name of your CI runner to `.github\workflow\terraform-deploy.yml`
+PRs run two stages:
 
-You should then be able to run the `Deploy Iac using Terraform` action on GitHub.
+1. **Static validation** (immediate): fmt, validate, TFLint, Checkov
+2. **Environment plans** (approved): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
-### Alternatives to using runners
+After merge, manually deploy via Actions workflow with approval.
 
-If you don't have any GitHub runners available, or don't want to use them, you can either:
+## Repository Structure
 
-- switch the Terraform Storage Account to allow public networking (check [.azbootstrap.jsonc](.azbootstrap.jsonc) for the details of the storage account)
-- use the `unlock_resource_firewalls` action to dynamically unlock the firewall during CI runs - check the [README.md](https://github.com/kewalaka/github-azure-iac-templates/blob/main/.github/actions/azure-unlock-firewall/README.md) for details.
+```text
+iac/
+  ├── main.tf                    # Infrastructure code
+  ├── backend.tf                 # State configuration
+  └── environments/
+      └── dev.terraform.tfvars   # Environment config
+.github/workflows/
+  ├── terraform-pr.yml           # PR validation
+  └── terraform-deploy.yml       # Deployment
+```
+
+## Key Features
+
+- Matrix-based validation across environments
+- Fast static checks without auth
+- OIDC authentication (no stored credentials)
+- Parallel environment plans
+- Per-environment approvals
+- Azure Developer CLI compatible
+
+## Documentation
+
+- [Setup Guide](docs/setup.md) - Configure GitHub environments and Azure OIDC
+- [Adding Environments](docs/adding-environments.md) - Scale from dev to prod
+- [Workflow Design](docs/workflow-design.md) - Architecture decisions and alternatives
+- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
+- [Using azd locally](docs/using-azd.md) - Optional local workflow with Azure Developer CLI
+
+## License
+
+See [LICENSE.md](LICENSE.md)

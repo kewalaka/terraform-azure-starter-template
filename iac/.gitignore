@@ -47,3 +47,6 @@ terraform.rc
 secrets*.ps1
 # ignore local tfplan runs
 tfplan
+ 
+# Local environment tfvars copied by azd pre-provision hook
+terraform.tfvars

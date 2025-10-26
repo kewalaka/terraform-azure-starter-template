@@ -1,0 +1,182 @@
+---
+name: Terraform PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'iac/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  id-token: write
+
+jobs:
+  # Stage 1: Fast static checks (no auth, no tfvars, no Azure)
+  static-validation:
+    name: "Static Analysis"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./iac
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.13"
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init (no backend)
+        id: init
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          set -o pipefail
+          terraform validate -no-color 2>&1 | tee validate_output.txt
+          echo "stdout<<EOF" >> $GITHUB_OUTPUT
+          sed -e 's/`/\\`/g' validate_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        id: tflint
+        run: tflint --format compact
+        continue-on-error: true
+
+      - name: Install Checkov
+        run: pip install --quiet checkov
+
+      - name: Run Checkov
+        id: checkov
+        run: |
+          checkov --directory . \
+            --output cli \
+            --output sarif \
+            --output-file-path . \
+            --skip-check CKV_AWS_*,CKV_GCP_* \
+            --soft-fail
+        continue-on-error: true
+
+      - name: Upload Checkov SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./iac/results_sarif.sarif
+          category: terraform-checkov
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `## 🔍 Static Analysis Results
+            
+            | Check | Status |
+            |-------|--------|
+            | 🖌 Terraform Format | \`${{ steps.fmt.outcome }}\` |
+            | ⚙️ Terraform Init | \`${{ steps.init.outcome }}\` |
+            | 🤖 Terraform Validate | \`${{ steps.validate.outcome }}\` |
+            | 📖 TFLint | \`${{ steps.tflint.outcome }}\` |
+            | 🔒 Checkov Security | \`${{ steps.checkov.outcome }}\` |
+            
+            <details><summary>📋 View Validation Output</summary>
+            
+            \`\`\`
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+            
+            </details>
+            
+            *Triggered by @${{ github.actor }} on \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Fail if critical checks failed
+        if: steps.fmt.outcome == 'failure' || steps.validate.outcome == 'failure'
+        run: |
+          echo "❌ Critical validation checks failed"
+          exit 1
+
+  # Stage 2: Environment-specific plans (requires approval via environment protection)
+  plan-environments:
+    name: "Plan (${{ matrix.environment }})"
+    needs: static-validation
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}-iac-plan
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev]  # Start with dev, add [tst, uat, prod] as needed
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./iac
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.13"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="subscription_id=${{ secrets.TF_STATE_SUBSCRIPTION_ID || secrets.ARM_SUBSCRIPTION_ID }}" \
+            -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP_NAME }}" \
+            -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.TF_STATE_STORAGE_CONTAINER_NAME || 'tfstate' }}" \
+            -backend-config="key=terraform.tfstate"
+      
+      - name: Terraform Plan
+        uses: kewalaka/github-azure-iac-templates/.github/actions/terraform-plan@main
+        with:
+          root_iac_folder_relative_path: ./iac
+          tfvars_file: environments/${{ matrix.environment }}.terraform.tfvars
+          destroy_resources: 'false'
+          github_token: ${{ secrets.GITHUB_TOKEN }}

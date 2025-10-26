@@ -9,10 +9,10 @@ variable "env_code" {
   type        = string
   validation {
     condition = contains(
-      ["dev", "test", "uat", "prod"],
+      ["dev", "tst", "test", "uat", "prod"],
       var.env_code
     )
-    error_message = "Err: environment should be one of dev, test or prod."
+    error_message = "Err: environment should be one of dev, tst, test, uat or prod."
   }
   validation {
     condition     = length(var.env_code) <= 4
@@ -47,4 +47,14 @@ since only unique items in a map are retained, and later tags supplied to merge(
 DESCRIPTION
   type        = map(string)
   default     = {}
+}
+
+variable "resource_group_name" {
+  description = "Existing Azure Resource Group name to deploy into. If null, defaults to rg-<appname>-<env_code>."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.resource_group_name == null || can(regex("^[A-Za-z0-9._()\\-]+$", var.resource_group_name))
+    error_message = "Resource group name may only contain alphanumeric characters, dash (-), underscore (_), parentheses, and periods."
+  }
 }
