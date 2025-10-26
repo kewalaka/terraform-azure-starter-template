@@ -48,3 +48,13 @@ DESCRIPTION
   type        = map(string)
   default     = {}
 }
+
+variable "resource_group_name" {
+  description = "Existing Azure Resource Group name to deploy into. If null, defaults to rg-<appname>-<env_code>."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.resource_group_name == null || can(regex("^[A-Za-z0-9._()\\-]+$", var.resource_group_name))
+    error_message = "Resource group name may only contain alphanumeric characters, dash (-), underscore (_), parentheses, and periods."
+  }
+}
