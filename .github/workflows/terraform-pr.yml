@@ -172,61 +172,11 @@ jobs:
             -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT_NAME }}" \
             -backend-config="container_name=${{ secrets.TF_STATE_STORAGE_CONTAINER_NAME || 'tfstate' }}" \
             -backend-config="key=terraform.tfstate"
-
+      
       - name: Terraform Plan
-        id: plan
-        run: |
-          terraform plan \
-            -var-file="environments/${{ matrix.environment }}.terraform.tfvars" \
-            -out="${{ matrix.environment }}.tfplan" \
-            -no-color
-
-      - name: Generate Plan Summary
-        id: show
-        run: |
-          terraform show -no-color ${{ matrix.environment }}.tfplan > plan_output.txt
-          
-          # Extract summary statistics
-          ADDS=$(grep -c "will be created" plan_output.txt || echo "0")
-          CHANGES=$(grep -c "will be updated" plan_output.txt || echo "0")
-          DESTROYS=$(grep -c "will be destroyed" plan_output.txt || echo "0")
-          
-          echo "adds=$ADDS" >> $GITHUB_OUTPUT
-          echo "changes=$CHANGES" >> $GITHUB_OUTPUT
-          echo "destroys=$DESTROYS" >> $GITHUB_OUTPUT
-
-      - name: Comment PR with Plan
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: kewalaka/github-azure-iac-templates/.github/actions/terraform-plan@main
         with:
-          script: |
-            const fs = require('fs');
-            const planOutput = fs.readFileSync('./iac/plan_output.txt', 'utf8');
-            const truncatedPlan = planOutput.length > 60000 
-              ? planOutput.substring(0, 60000) + '\n\n... (truncated)' 
-              : planOutput;
-            
-            const output = `## 📋 Terraform Plan: \`${{ matrix.environment }}\`
-            
-            | Action | Count |
-            |--------|-------|
-            | ➕ Create | ${{ steps.show.outputs.adds }} |
-            | 🔄 Change | ${{ steps.show.outputs.changes }} |
-            | ❌ Destroy | ${{ steps.show.outputs.destroys }} |
-            
-            <details><summary>📄 Show Full Plan</summary>
-            
-            \`\`\`terraform
-            ${truncatedPlan}
-            \`\`\`
-            
-            </details>
-            
-            *Plan generated for environment: \`${{ matrix.environment }}\`*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
+          root_iac_folder_relative_path: ./iac
+          tfvars_file: environments/${{ matrix.environment }}.terraform.tfvars
+          destroy_resources: 'false'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
