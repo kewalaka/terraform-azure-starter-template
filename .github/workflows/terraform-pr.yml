@@ -136,7 +136,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [dev]
+        environment: [dev]  # Start with dev, add [tst, uat, prod] as needed
     defaults:
       run:
         shell: bash

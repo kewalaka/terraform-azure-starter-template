@@ -1,0 +1,13 @@
+name: terraform-azure-starter-template
+
+infra:
+  provider: terraform
+  path: iac
+
+hooks:
+  preprovision:
+    shell: sh
+    run: |
+      if [ -f "iac/environments/${AZURE_ENV_NAME}.terraform.tfvars" ]; then
+        cp -f "iac/environments/${AZURE_ENV_NAME}.terraform.tfvars" "iac/terraform.tfvars"
+      fi

@@ -1,12 +1,12 @@
 terraform {
-  required_version = ">= 1.8.0"
+  required_version = "~> 1.13.0"
 
   required_providers {
     # The root of the configuration where Terraform Apply runs should specify the maximum allowed provider version.
     # https://developer.hashicorp.com/terraform/language/providers/requirements#best-practices-for-provider-versions  
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.7"
+      version = "~> 4.50"
     }
   }
 

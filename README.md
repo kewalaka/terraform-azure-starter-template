@@ -1,81 +1,67 @@
-# Base Terraform Solution Template
+# Terraform Azure Starter Template
 
-A streamlined Terraform template for quickly provisioning Azure resources with GitHub-integrated deployments.
+Template for Azure infrastructure using Terraform with using central CI/CD workflows.
 
-## Getting Started
+Uses shared GitHub Actions workflow here: <https://github.com/kewalaka/github-azure-iac-templates>
 
-This is designed to be used with [Az-Bootstrap](https://github.com/kewalaka/az-bootstrap)
+## Quick Start
 
-Az-Bootstrap will create the deployment resource group, storage account for state, plan & apply identities.
+1. **Use this template** to create your repository
+1. **Set up GitHub environments and Azure OIDC** ([guide](docs/setup.md))
+1. **Create a PR** - validation runs automatically
+1. **Approve** - dev deployment runs on main
 
-To make the sample code work
+## How It Works
 
-1) Update the `app_name` in locals.tf to match the name of the repository.
+```mermaid
+graph TD
+    A[PR Created] --> B[Static Validation]
+    B -->|Fast ~2 min| C{Pass?}
+    C -->|Yes| D[Environment Plans]
+    C -->|No| E[Fix Issues]
+    D -->|Requires Approval| F[Post Results]
+    
+    style B fill:#e1f5ff
+    style D fill:#fff4e1
+```
 
-1) Add the name of your CI runner to `.github\workflow\terraform-deploy.yml`
+PRs run two stages:
 
-You should then be able to run the `Deploy Iac using Terraform` action on GitHub.
+1. **Static validation** (immediate): fmt, validate, TFLint, Checkov
+2. **Environment plans** (approved): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
-## CI/CD Workflows
+After merge, manually deploy via Actions workflow with approval.
 
-This template uses a two-stage CI workflow pattern that separates fast validation from expensive terraform plans:
+## Repository Structure
 
-### Stage 1: Terraform Validation (Automatic & Fast)
+```text
+iac/
+  ├── main.tf                    # Infrastructure code
+  ├── backend.tf                 # State configuration
+  └── environments/
+      └── dev.terraform.tfvars   # Environment config
+.github/workflows/
+  ├── terraform-pr.yml           # PR validation
+  └── terraform-deploy.yml       # Deployment
+```
 
-The `terraform-ci-validation.yml` workflow runs automatically on all PRs that touch IaC files. It performs:
-- **Terraform format checking** (`terraform fmt -check`)
-- **Terraform validation** (`terraform validate`)
-- **TFLint checks** for best practices and potential issues
+## Key Features
 
-This stage is fast (typically <1 minute) and requires no cloud access or authentication. Results are posted as a PR comment for quick review.
+- Matrix-based validation across environments
+- Fast static checks without auth
+- OIDC authentication (no stored credentials)
+- Parallel environment plans
+- Single approval gate
+- Azure Developer CLI compatible
 
-### Stage 2: Terraform Plan (Manual or Label-Triggered)
+## Documentation
 
-After validation passes and human/Copilot review, environment-specific terraform plans can be triggered:
+- [Setup Guide](docs/setup.md) - Configure GitHub environments and Azure OIDC
+- [Adding Environments](docs/adding-environments.md) - Scale from dev to prod
+- [Workflow Design](docs/workflow-design.md) - Architecture decisions and alternatives
+- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
+- [Using azd locally](docs/using-azd.md) - Optional local workflow with Azure Developer CLI
 
-**Per-environment workflows:**
-- `terraform-ci-dev.yml` - Runs terraform plan for dev environment
-- `terraform-ci-tst.yml` - Runs terraform plan for tst environment
+## License
 
-**How to trigger:**
-1. **Manual trigger**: Use the "Run workflow" button in GitHub Actions
-2. **Label trigger**: Add label `run-plan-dev` or `run-plan-tst` to the PR
-
-This two-stage approach ensures:
-- ✅ Fast feedback on code quality and syntax
-- ✅ Time for review before expensive cloud operations
-- ✅ Explicit approval/trigger required for terraform plans
-- ✅ No wasted cloud resources on invalid terraform code
-
-### Terraform Deploy (Manual)
-
-The `terraform-deploy.yml` workflow is manually triggered and allows you to:
-- Choose the target environment (dev, tst, test, uat, or prod)
-- Select the Terraform action (plan, apply, or destroy)
-- Optionally destroy resources with confirmation
-
-## Environments
-
-This template demonstrates the pattern with two environments:
-- `dev.terraform.tfvars` - Development environment
-- `tst.terraform.tfvars` - Test environment
-
-Additional environment files are included as examples:
-- `test.terraform.tfvars` - Alternative test environment naming
-- `uat.terraform.tfvars` - User Acceptance Testing environment
-- `prod.terraform.tfvars` - Production environment
-
-### Adding New Environments
-
-For vending processes, new environments can be added by creating:
-1. A new tfvars file (e.g., `iac/environments/stg.terraform.tfvars`)
-2. A corresponding CI workflow file (e.g., `.github/workflows/terraform-ci-stg.yml`)
-
-Both files can be managed as a single unit, with no need for complex matrix builds or dynamic environment detection.
-
-### Alternatives to using runners
-
-If you don't have any GitHub runners available, or don't want to use them, you can either:
-
-- switch the Terraform Storage Account to allow public networking (check [.azbootstrap.jsonc](.azbootstrap.jsonc) for the details of the storage account)
-- use the `unlock_resource_firewalls` action to dynamically unlock the firewall during CI runs - check the [README.md](https://github.com/kewalaka/github-azure-iac-templates/blob/main/.github/actions/azure-unlock-firewall/README.md) for details.
+See [LICENSE.md](LICENSE.md)
