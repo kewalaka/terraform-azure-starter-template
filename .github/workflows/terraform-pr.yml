@@ -7,6 +7,16 @@ on:
     paths:
       - 'iac/**'
       - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      require_approval:
+        description: 'Require manual approval before running plan'
+        type: boolean
+        default: false
+      skip_plan:
+        description: 'Skip the Terraform plan stage'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -128,18 +138,18 @@ jobs:
           echo "❌ Critical validation checks failed"
           exit 1
 
-  # Stage 1.5: Manual approval before running plans (only if 'require-approval' label is present)
+  # Stage 1.5: Manual approval before running plans (only if require_approval input is true)
   approval:
     name: "Approve Terraform Plan"
     needs: static-validation
-    if: contains(github.event.pull_request.labels.*.name, 'require-approval')
+    if: inputs.require_approval == true
     runs-on: ubuntu-latest
     steps:
       - name: Wait for approval
         uses: trstringer/manual-approval@v1
         timeout-minutes: 60
         with:
-          secret: ${{ github.TOKEN }}
+          secret: ${{ secrets.GITHUB_TOKEN }}
           approvers: ${{ github.repository_owner }}
           minimum-approvals: 1
           issue-title: "Approve Terraform Plan for PR #${{ github.event.pull_request.number }}"
@@ -155,13 +165,13 @@ jobs:
             To approve, comment `approve` on this issue.
             To deny, comment `deny` on this issue.
 
-  # Stage 2: Environment-specific plans (runs after static validation or approval, skipped if 'skip-plan' label is present)
+  # Stage 2: Environment-specific plans (runs after static validation or approval, skipped if skip_plan input is true)
   # Note: environment is used for secret access only, not for approval gates
   plan-environments:
     name: "Plan (${{ matrix.environment }})"
     needs: [static-validation, approval]
     if: |
-      !contains(github.event.pull_request.labels.*.name, 'skip-plan') &&
+      inputs.skip_plan != true &&
       (needs.approval.result == 'success' || needs.approval.result == 'skipped')
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}-iac-plan
