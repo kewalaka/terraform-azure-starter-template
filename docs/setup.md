@@ -75,7 +75,7 @@ Navigate to Settings → Environments → New environment.
 
 Create `dev-iac-plan` with:
 
-- Required reviewers: 1+ (optional but recommended for visibility)
+- **No required reviewers** (approval is handled by manual-approval action in workflow)
 - No deployment branches restriction
 
 ### For Deployment
