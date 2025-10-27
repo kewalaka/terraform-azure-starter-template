@@ -13,6 +13,7 @@ permissions:
   pull-requests: write
   security-events: write
   id-token: write
+  issues: write
 
 jobs:
   # Stage 1: Fast static checks (no auth, no tfvars, no Azure)
@@ -127,10 +128,37 @@ jobs:
           echo "❌ Critical validation checks failed"
           exit 1
 
-  # Stage 2: Environment-specific plans (requires approval via environment protection)
+  # Stage 1.5: Manual approval before running plans
+  approval:
+    name: "Approve Terraform Plan"
+    needs: static-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for approval
+        uses: trstringer/manual-approval@v1
+        timeout-minutes: 60
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ github.repository_owner }}
+          minimum-approvals: 1
+          issue-title: "Approve Terraform Plan for PR #${{ github.event.pull_request.number }}"
+          issue-body: |
+            Please approve or deny the Terraform plan for PR #${{ github.event.pull_request.number }}
+            
+            **PR Title:** ${{ github.event.pull_request.title }}
+            **Author:** @${{ github.event.pull_request.user.login }}
+            **Branch:** `${{ github.head_ref }}`
+            
+            Review the static validation results in the PR comments before approving.
+            
+            To approve, comment `approve` on this issue.
+            To deny, comment `deny` on this issue.
+
+  # Stage 2: Environment-specific plans (runs after manual approval)
+  # Note: environment is used for secret access only, not for approval gates
   plan-environments:
     name: "Plan (${{ matrix.environment }})"
-    needs: static-validation
+    needs: approval
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}-iac-plan
     strategy:

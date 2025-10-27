@@ -17,20 +17,23 @@ Uses shared GitHub Actions workflow here: <https://github.com/kewalaka/github-az
 graph TD
     A[PR Created] --> B[Static Validation]
     B -->|Fast ~2 min| C{Pass?}
-    C -->|Yes| D[Environment Plans]
+    C -->|Yes| D[Manual Approval]
     C -->|No| E[Fix Issues]
-    D -->|Requires Approval| F[Post Results]
+    D -->|Approve via Issue| F[Environment Plans]
+    F --> G[Post Results]
     
     style B fill:#e1f5ff
-    style D fill:#fff4e1
+    style D fill:#ffe1e1
+    style F fill:#fff4e1
 ```
 
-PRs run two stages:
+PRs run three stages:
 
 1. **Static validation** (immediate): fmt, validate, TFLint, Checkov
-2. **Environment plans** (approved): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
+2. **Manual approval** (via GitHub issue): Single approval for all environments
+3. **Environment plans** (parallel): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
-After merge, manually deploy via Actions workflow with approval.
+After merge, manually deploy via Actions workflow with approval on apply only (no approval needed for plan).
 
 ## Repository Structure
 
@@ -51,12 +54,14 @@ iac/
 - Fast static checks without auth
 - OIDC authentication (no stored credentials)
 - Parallel environment plans
-- Per-environment approvals
+- Single approval for PR plans (avoids double approvals during deployment)
+- Environment protection only on deployment apply stage
 - Azure Developer CLI compatible
 
 ## Documentation
 
 - [Setup Guide](docs/setup.md) - Configure GitHub environments and Azure OIDC
+- [PR Approval Workflow](docs/approval-workflow.md) - How PR approvals work and why
 - [Adding Environments](docs/adding-environments.md) - Scale from dev to prod
 - [Workflow Design](docs/workflow-design.md) - Architecture decisions and alternatives
 - [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
