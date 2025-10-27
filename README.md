@@ -16,21 +16,23 @@ Uses shared GitHub Actions workflow here: <https://github.com/kewalaka/github-az
 ```mermaid
 graph TD
     A[PR Created] --> B[Static Validation]
-    B -->|Fast ~2 min| C{Pass?}
-    C -->|Yes| D[Environment Plans]
-    C -->|No| E[Fix Issues]
-    D --> F[Post Results]
+    B -->|Pass| C{TFPLAN_PR_APPROVAL_REQUIRED?}
+    C -->|Not Set| D[Terraform Plan]
+    C -->|true| E[Manual Approval Issue]
+    E -->|approve| D
+    E -->|deny| F[Workflow Stopped]
+    D --> G[Post Plan Results]
     
-    G[Manual Trigger] --> H{Options?}
-    H -->|require_approval| I[Manual Approval]
-    H -->|skip_plan| J[Done]
-    H -->|default| D
-    I -->|Approve via Issue| D
+    H[PR Merged to main] --> I[Deploy Workflow]
+    I --> J[Terraform Plan]
+    J --> K{Environment Protection}
+    K -->|Approval| L[Terraform Apply]
+    L --> M[Deployment Complete]
     
     style B fill:#e1f5ff
-    style H fill:#ffffcc
-    style I fill:#ffe1e1
+    style E fill:#ffe1e1
     style D fill:#fff4e1
+    style L fill:#d4f4dd
 ```
 
 PRs run automatically with auto-plan by default:
@@ -39,10 +41,14 @@ PRs run automatically with auto-plan by default:
 2. **Environment plans** (parallel, automatic): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
 For repository-level control, configure optional variables in Settings → Actions → Variables:
+
 - **`TFPLAN_PR_APPROVAL_REQUIRED = true`**: Manual approval required before plans
 - **`TFPLAN_SKIP_ON_PR = true`**: Skip plan stage entirely
 
-After merge, manually deploy via Actions workflow with approval on apply only (no approval needed for plan).
+After merge to main, the deploy workflow runs:
+
+1. **Terraform plan** (no approval)
+2. **Terraform apply** (requires environment protection approval on `*-iac-apply` environment)
 
 ## Repository Structure
 
