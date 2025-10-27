@@ -1,24 +1,25 @@
 # PR Approval Workflow
 
-The PR workflow supports flexible approval options configured at the repository level via workflow settings. By default, plans run automatically after static validation passes.
+The PR workflow supports flexible approval options configured at the repository level via GitHub Actions variables. By default, plans run automatically after static validation passes.
 
 ## Workflow Modes
 
-The workflow supports three modes configured when manually triggering the workflow:
+The workflow supports three modes controlled by optional repository variables:
 
-### 1. **Auto-plan (Default)** - Default behavior for pull_request events
+### 1. **Auto-plan (Default)** - No variables configured
 - Static validation runs automatically
 - Terraform plan runs immediately after validation passes
 - **This is the default behavior** - fastest path for standard PRs
 - No manual intervention required
+- No configuration needed
 
-### 2. **Skip Plan** - Set `skip_plan: true` when manually running
+### 2. **Skip Plan** - Set `TFPLAN_SKIP_ON_PR` variable to `true`
 - Static validation runs automatically
 - Terraform plan is skipped entirely
 - Use when you only want validation without generating a plan
 - Useful for documentation-only changes
 
-### 3. **Require Approval** - Set `require_approval: true` when manually running
+### 3. **Require Approval** - Set `TFPLAN_PR_APPROVAL_REQUIRED` variable to `true`
 - Static validation runs automatically
 - A GitHub issue is created requiring approval
 - Terraform plan runs only after approval
@@ -26,38 +27,46 @@ The workflow supports three modes configured when manually triggering the workfl
 
 ## How to Configure
 
-The workflow runs automatically on pull requests with default settings (auto-plan). To use different modes, manually trigger the workflow:
+The workflow runs automatically on pull requests with default settings (auto-plan). To change the behavior, configure repository variables:
 
-### Via GitHub UI
+### Setting Repository Variables
 
-1. Go to Actions → Terraform PR Validation
-2. Click "Run workflow"
-3. Select the branch
-4. Configure options:
-   - **Require manual approval before running plan**: Check to enable approval gate
-   - **Skip the Terraform plan stage**: Check to skip plan
-5. Click "Run workflow"
+1. Go to your repository → **Settings**
+2. Navigate to **Secrets and variables** → **Actions**
+3. Click on the **Variables** tab
+4. Click **New repository variable**
+5. Add one or both of these variables:
 
-### Via GitHub CLI
+| Variable Name | Value | Effect |
+|---------------|-------|--------|
+| `TFPLAN_PR_APPROVAL_REQUIRED` | `true` | Requires manual approval before running plan |
+| `TFPLAN_SKIP_ON_PR` | `true` | Skips the plan stage entirely |
 
-```bash
-# Default: Auto-plan (runs automatically on PR)
-# No action needed
+**Note:** These variables are optional. If not set, the workflow defaults to auto-plan behavior.
 
-# Manually trigger with approval required
-gh workflow run "Terraform PR Validation" \
-  --field require_approval=true \
-  --field skip_plan=false
+### Example Configurations
 
-# Manually trigger with plan skipped
-gh workflow run "Terraform PR Validation" \
-  --field require_approval=false \
-  --field skip_plan=true
+**Default (no variables):**
+```
+# No variables configured
+# Result: Static validation → Plan immediately
+```
+
+**Require approval:**
+```
+TFPLAN_PR_APPROVAL_REQUIRED = true
+# Result: Static validation → Manual approval → Plan
+```
+
+**Skip plan:**
+```
+TFPLAN_SKIP_ON_PR = true
+# Result: Static validation only, no plan
 ```
 
 ## Workflow Behavior
 
-When a PR is created (automatic trigger):
+When a PR is created:
 
 1. **Static validation runs automatically** (~2 minutes)
    - Terraform format check
@@ -65,15 +74,7 @@ When a PR is created (automatic trigger):
    - TFLint
    - Checkov security scanning
 
-2. **Terraform plan runs immediately** (default)
-   - After validation passes, all environment plans execute in parallel
-   - Results are posted as PR comments
-
-When manually triggered with options:
-
-1. **Static validation runs automatically** (~2 minutes)
-
-2. **Conditional approval** (only if `require_approval` is true)
+2. **Conditional approval** (only if `TFPLAN_PR_APPROVAL_REQUIRED` is set to `true`)
    - A GitHub issue is created in the repository
    - The issue includes PR details and a link to the PR
    - Configured approvers receive notifications
@@ -83,61 +84,40 @@ When manually triggered with options:
    - To deny: Comment `deny` on the issue
    - Timeout: 60 minutes (configurable)
 
-4. **Environment plans run in parallel** (unless `skip_plan` is true)
+4. **Environment plans run in parallel** (unless `TFPLAN_SKIP_ON_PR` is set to `true`)
    - After validation (and approval if required), all environment plans execute
    - Results are posted as PR comments
 
 ## Configuration Matrix
 
-| Trigger Type | require_approval | skip_plan | Behavior |
-|--------------|------------------|-----------|----------|
-| pull_request (auto) | false | false | Static validation → Plan immediately |
-| workflow_dispatch | false | true | Static validation only, no plan |
-| workflow_dispatch | true | false | Static validation → Manual approval → Plan |
-| workflow_dispatch | true | true | Static validation → Manual approval → No plan |
-
-## Why Not Environment Protection?
-
-Using environment protection rules for PR approvals creates a problem:
-
-### Previous Approach (Environment Protection)
-- ❌ PR uses `dev-iac-plan` environment with required reviewers
-- ❌ Deploy workflow also uses `dev-iac-plan` for planning
-- ❌ Results in **double approval**: once for plan, once for apply
-- ❌ No way to differentiate PR plans from deployment plans
-
-### Current Approach (Workflow Input Control)
+| TFPLAN_PR_APPROVAL_REQUIRED | TFPLAN_SKIP_ON_PR | Behavior |
+|------------------------------|-------------------|----------|
+| Not set (default) | Not set (default) | Static validation → Plan immediately |
+| Not set | `true` | Static validation only, no plan |
+| `true` | Not set | Static validation → Manual approval → Plan |
+| `true` | `true` | Static validation → Manual approval → No plan |
+### Current Approach (Repository Variables)
 - ✅ Default: Plans run automatically after validation (fastest workflow)
-- ✅ Optional: Set `require_approval` input for manual approval gate
-- ✅ Optional: Set `skip_plan` input to skip plan stage
-- ✅ Repository-level decision, not per-PR management
+- ✅ Optional: Set `TFPLAN_PR_APPROVAL_REQUIRED` variable for manual approval gate
+- ✅ Optional: Set `TFPLAN_SKIP_ON_PR` variable to skip plan stage
+- ✅ True repository-level control via GitHub Actions variables
 - ✅ Deploy workflow uses `dev-iac-plan` without reviewers (no approval needed)
 - ✅ Deploy workflow uses `dev-iac-apply` with reviewers (approval for apply only)
-- ✅ Clear separation: PR approval is workflow-controlled, deployment approval is environment-based
+- ✅ Clear separation: PR approval is variable-controlled, deployment approval is environment-based
 
 ## Configuration
 
-The workflow is controlled by workflow inputs. The approval step is configured to run conditionally:
+The workflow is controlled by optional repository variables. The approval step is configured to run conditionally:
 
 ```yaml
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      require_approval:
-        description: 'Require manual approval before running plan'
-        type: boolean
-        default: false
-      skip_plan:
-        description: 'Skip the Terraform plan stage'
-        type: boolean
-        default: false
 
 approval:
   name: "Approve Terraform Plan"
   needs: static-validation
-  if: inputs.require_approval == true
+  if: vars.TFPLAN_PR_APPROVAL_REQUIRED == 'true'
   runs-on: ubuntu-latest
   steps:
     - name: Wait for approval

@@ -7,16 +7,6 @@ on:
     paths:
       - 'iac/**'
       - '.github/workflows/**'
-  workflow_dispatch:
-    inputs:
-      require_approval:
-        description: 'Require manual approval before running plan'
-        type: boolean
-        default: false
-      skip_plan:
-        description: 'Skip the Terraform plan stage'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -138,11 +128,11 @@ jobs:
           echo "❌ Critical validation checks failed"
           exit 1
 
-  # Stage 1.5: Manual approval before running plans (only if require_approval input is true)
+  # Stage 1.5: Manual approval before running plans (only if TFPLAN_PR_APPROVAL_REQUIRED variable is set to 'true')
   approval:
     name: "Approve Terraform Plan"
     needs: static-validation
-    if: inputs.require_approval == true
+    if: vars.TFPLAN_PR_APPROVAL_REQUIRED == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Wait for approval
@@ -165,13 +155,13 @@ jobs:
             To approve, comment `approve` on this issue.
             To deny, comment `deny` on this issue.
 
-  # Stage 2: Environment-specific plans (runs after static validation or approval, skipped if skip_plan input is true)
+  # Stage 2: Environment-specific plans (runs after static validation or approval, skipped if TFPLAN_SKIP_ON_PR variable is set to 'true')
   # Note: environment is used for secret access only, not for approval gates
   plan-environments:
     name: "Plan (${{ matrix.environment }})"
     needs: [static-validation, approval]
     if: |
-      inputs.skip_plan != true &&
+      vars.TFPLAN_SKIP_ON_PR != 'true' &&
       (needs.approval.result == 'success' || needs.approval.result == 'skipped')
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}-iac-plan

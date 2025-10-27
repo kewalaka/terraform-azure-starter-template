@@ -38,9 +38,9 @@ PRs run automatically with auto-plan by default:
 1. **Static validation** (immediate): fmt, validate, TFLint, Checkov
 2. **Environment plans** (parallel, automatic): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
-For manual control, trigger workflow with inputs:
-- **`require_approval: true`**: Manual approval required before plans
-- **`skip_plan: true`**: Skip plan stage entirely
+For repository-level control, configure optional variables in Settings → Actions → Variables:
+- **`TFPLAN_PR_APPROVAL_REQUIRED = true`**: Manual approval required before plans
+- **`TFPLAN_SKIP_ON_PR = true`**: Skip plan stage entirely
 
 After merge, manually deploy via Actions workflow with approval on apply only (no approval needed for plan).
 
@@ -63,11 +63,11 @@ iac/
 - Fast static checks without auth
 - OIDC authentication (no stored credentials)
 - Parallel environment plans
-- **Flexible approval workflow** (workflow input-controlled):
+- **Flexible approval workflow** (repository variable-controlled):
   - Auto-plan by default for PRs (fastest path)
-  - Optional manual approval via workflow input
-  - Optional skip plan via workflow input
-  - Repository-level decision, not per-PR management
+  - Optional manual approval via `TFPLAN_PR_APPROVAL_REQUIRED` variable
+  - Optional skip plan via `TFPLAN_SKIP_ON_PR` variable
+  - True repository-level control, no code changes needed
 - Avoids double approvals during deployment
 - Environment protection only on deployment apply stage
 - Azure Developer CLI compatible
