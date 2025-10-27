@@ -61,6 +61,7 @@ iac/
 ## Documentation
 
 - [Setup Guide](docs/setup.md) - Configure GitHub environments and Azure OIDC
+- [Administrative Recommendation](docs/administrative-recommendation.md) - Why this approval approach and setup steps
 - [PR Approval Workflow](docs/approval-workflow.md) - How PR approvals work and why
 - [Adding Environments](docs/adding-environments.md) - Scale from dev to prod
 - [Workflow Design](docs/workflow-design.md) - Architecture decisions and alternatives
