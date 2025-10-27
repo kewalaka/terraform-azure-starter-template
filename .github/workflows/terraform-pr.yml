@@ -128,10 +128,11 @@ jobs:
           echo "❌ Critical validation checks failed"
           exit 1
 
-  # Stage 1.5: Manual approval before running plans
+  # Stage 1.5: Manual approval before running plans (only if 'require-approval' label is present)
   approval:
     name: "Approve Terraform Plan"
     needs: static-validation
+    if: contains(github.event.pull_request.labels.*.name, 'require-approval')
     runs-on: ubuntu-latest
     steps:
       - name: Wait for approval
@@ -154,11 +155,14 @@ jobs:
             To approve, comment `approve` on this issue.
             To deny, comment `deny` on this issue.
 
-  # Stage 2: Environment-specific plans (runs after manual approval)
+  # Stage 2: Environment-specific plans (runs after static validation or approval, skipped if 'skip-plan' label is present)
   # Note: environment is used for secret access only, not for approval gates
   plan-environments:
     name: "Plan (${{ matrix.environment }})"
-    needs: approval
+    needs: [static-validation, approval]
+    if: |
+      !contains(github.event.pull_request.labels.*.name, 'skip-plan') &&
+      (needs.approval.result == 'success' || needs.approval.result == 'skipped')
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}-iac-plan
     strategy:

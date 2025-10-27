@@ -17,21 +17,28 @@ Uses shared GitHub Actions workflow here: <https://github.com/kewalaka/github-az
 graph TD
     A[PR Created] --> B[Static Validation]
     B -->|Fast ~2 min| C{Pass?}
-    C -->|Yes| D[Manual Approval]
+    C -->|Yes| D{Label?}
     C -->|No| E[Fix Issues]
-    D -->|Approve via Issue| F[Environment Plans]
-    F --> G[Post Results]
+    D -->|Default| F[Environment Plans]
+    D -->|require-approval| G[Manual Approval]
+    D -->|skip-plan| H[Done]
+    G -->|Approve via Issue| F
+    F --> I[Post Results]
     
     style B fill:#e1f5ff
-    style D fill:#ffe1e1
+    style D fill:#ffffcc
+    style G fill:#ffe1e1
     style F fill:#fff4e1
 ```
 
-PRs run three stages:
+PRs run flexibly based on labels:
 
 1. **Static validation** (immediate): fmt, validate, TFLint, Checkov
-2. **Manual approval** (via GitHub issue): Single approval for all environments
-3. **Environment plans** (parallel): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
+2. **Conditional flow** (label-controlled):
+   - **Default (no label)**: Plans run automatically after validation
+   - **`require-approval` label**: Manual approval required before plans
+   - **`skip-plan` label**: Skip plan stage entirely
+3. **Environment plans** (parallel, unless skipped): Terraform plan for dev (add more via [guide](docs/adding-environments.md))
 
 After merge, manually deploy via Actions workflow with approval on apply only (no approval needed for plan).
 
@@ -54,7 +61,11 @@ iac/
 - Fast static checks without auth
 - OIDC authentication (no stored credentials)
 - Parallel environment plans
-- Single approval for PR plans (avoids double approvals during deployment)
+- **Flexible approval workflow** (label-controlled):
+  - Auto-plan by default (fastest path)
+  - Optional manual approval via `require-approval` label
+  - Optional skip plan via `skip-plan` label
+- Avoids double approvals during deployment
 - Environment protection only on deployment apply stage
 - Azure Developer CLI compatible
 

@@ -1,8 +1,46 @@
 # PR Approval Workflow
 
-The PR workflow uses a marketplace action (`trstringer/manual-approval`) for approvals rather than GitHub environment protection rules. This design choice provides better separation between PR validation and deployment approvals.
+The PR workflow supports flexible approval options using PR labels. By default, plans run automatically after static validation passes. You can control the workflow behavior using labels.
 
-## How It Works
+## Workflow Modes
+
+The workflow supports three modes controlled by PR labels:
+
+### 1. **Auto-plan (Default)** - No label required
+- Static validation runs automatically
+- Terraform plan runs immediately after validation passes
+- **This is the default behavior** - fastest path for standard PRs
+
+### 2. **Skip Plan** - Add `skip-plan` label
+- Static validation runs automatically
+- Terraform plan is skipped entirely
+- Use when you only want validation without generating a plan
+
+### 3. **Require Approval** - Add `require-approval` label
+- Static validation runs automatically
+- A GitHub issue is created requiring approval
+- Terraform plan runs only after approval
+- Use for sensitive changes requiring explicit review
+
+## How to Use Labels
+
+Add labels to your PR to control the workflow:
+
+```bash
+# Skip the plan stage entirely
+gh pr edit <pr-number> --add-label "skip-plan"
+
+# Require manual approval before plan
+gh pr edit <pr-number> --add-label "require-approval"
+
+# Remove labels to return to default auto-plan behavior
+gh pr edit <pr-number> --remove-label "skip-plan"
+gh pr edit <pr-number> --remove-label "require-approval"
+```
+
+Or add labels via the GitHub UI: PR page → Labels section on the right sidebar
+
+## Workflow Behavior
 
 When a PR is created:
 
@@ -12,19 +50,28 @@ When a PR is created:
    - TFLint
    - Checkov security scanning
 
-2. **Approval issue is created automatically**
+2. **Conditional approval** (only if `require-approval` label is present)
    - A GitHub issue is created in the repository
    - The issue includes PR details and a link to the PR
    - Configured approvers receive notifications
 
-3. **Approver responds via issue comment**
+3. **Approver responds via issue comment** (if approval required)
    - To approve: Comment `approve` on the issue
    - To deny: Comment `deny` on the issue
    - Timeout: 60 minutes (configurable)
 
-4. **Environment plans run in parallel**
-   - After approval, all environment plans execute simultaneously
+4. **Environment plans run in parallel** (unless `skip-plan` label is present)
+   - After validation (and approval if required), all environment plans execute
    - Results are posted as PR comments
+
+## Label Combinations
+
+| Labels | Behavior |
+|--------|----------|
+| None (default) | Static validation → Plan immediately |
+| `skip-plan` | Static validation only, no plan |
+| `require-approval` | Static validation → Manual approval → Plan |
+| Both labels | Static validation → Manual approval → No plan (skip-plan takes precedence) |
 
 ## Why Not Environment Protection?
 
@@ -36,20 +83,23 @@ Using environment protection rules for PR approvals creates a problem:
 - ❌ Results in **double approval**: once for plan, once for apply
 - ❌ No way to differentiate PR plans from deployment plans
 
-### Current Approach (Manual Approval Action)
-- ✅ PR uses manual-approval action (single approval for all environments)
+### Current Approach (Label-Based Control)
+- ✅ Default: Plans run automatically after validation (fastest workflow)
+- ✅ Optional: Add `require-approval` label for manual approval gate
+- ✅ Optional: Add `skip-plan` label to skip plan stage
 - ✅ Deploy workflow uses `dev-iac-plan` without reviewers (no approval needed)
 - ✅ Deploy workflow uses `dev-iac-apply` with reviewers (approval for apply only)
-- ✅ Clear separation: PR approval is workflow-based, deployment approval is environment-based
+- ✅ Clear separation: PR approval is label-controlled, deployment approval is environment-based
 
 ## Configuration
 
-The approval step is configured in `.github/workflows/terraform-pr.yml`:
+The workflow is controlled by PR labels. The approval step is configured to run conditionally:
 
 ```yaml
 approval:
   name: "Approve Terraform Plan"
   needs: static-validation
+  if: contains(github.event.pull_request.labels.*.name, 'require-approval')
   runs-on: ubuntu-latest
   steps:
     - name: Wait for approval
